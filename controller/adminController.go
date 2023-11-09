@@ -16,11 +16,11 @@ import (
 type AdminController interface {
 	RegisterAdminController(ctx echo.Context) error
 	LoginAdminController(ctx echo.Context) error
-	UpdateAdminController(ctx echo.Context) error
-	ResetPasswordController(ctx echo.Context) error
 	GetAdminController(ctx echo.Context) error
 	GetAdminsController(ctx echo.Context) error
 	GetAdminByNameController(ctx echo.Context) error
+	UpdateAdminController(ctx echo.Context) error
+	ResetPasswordController(ctx echo.Context) error
 	DeleteAdminController(ctx echo.Context) error
 }
 

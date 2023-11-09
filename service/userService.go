@@ -15,11 +15,11 @@ import (
 type UserService interface {
 	CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error)
 	LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error)
-	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id int) (*domain.User, error)
-	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error)
 	FindById(ctx echo.Context, id int) (*domain.User, error)
 	FindAll(ctx echo.Context) ([]domain.User, error)
 	FindByName(ctx echo.Context, name string) (*domain.User, error)
+	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id int) (*domain.User, error)
+	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error)
 	DeleteUser(ctx echo.Context, id int) error
 }
 
