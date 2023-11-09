@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"net/http"
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/res"
+	"net/http"
 	"strconv"
 
 	"strings"
@@ -16,11 +16,10 @@ import (
 type AdminController interface {
 	RegisterAdminController(ctx echo.Context) error
 	LoginAdminController(ctx echo.Context) error
-	UpdateAdminController(ctx echo.Context) error
-	ResetPasswordController(ctx echo.Context) error
 	GetAdminController(ctx echo.Context) error
 	GetAdminsController(ctx echo.Context) error
-	GetAdminByNameController(ctx echo.Context) error
+	UpdateAdminController(ctx echo.Context) error
+	ResetPasswordController(ctx echo.Context) error
 	DeleteAdminController(ctx echo.Context) error
 }
 
@@ -92,24 +91,48 @@ func (c *AdminControllerImpl) LoginAdminController(ctx echo.Context) error {
 }
 
 func (c *AdminControllerImpl) GetAdminController(ctx echo.Context) error {
-	adminId := ctx.Param("id")
-	adminIdInt, err := strconv.Atoi(adminId)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
+	idQueryParam := ctx.QueryParam("id")
+	nameQueryParam := ctx.QueryParam("name")
+
+	if idQueryParam != "" && nameQueryParam != "" {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Both 'id' and 'name' query params are provided, please provide only one"))
 	}
 
-	result, err := c.AdminService.FindById(ctx, adminIdInt)
-	if err != nil {
-		if strings.Contains(err.Error(), "admin not found") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admin Not Found"))
+	if idQueryParam != "" {
+		userIdInt, err := strconv.Atoi(idQueryParam)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Admin Data Error"))
+		result, err := c.AdminService.FindById(ctx, userIdInt)
+		if err != nil {
+			if strings.Contains(err.Error(), "users not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admins Not Found"))
+			}
+
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All Admins Data Error"))
+		}
+
+		response := res.AdminDomaintoAdminResponse(result)
+
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Admins Data", response))
+
+	} else if nameQueryParam != "" {
+		result, err := c.AdminService.FindByName(ctx, nameQueryParam)
+		if err != nil {
+			if strings.Contains(err.Error(), "user not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admin Not Found"))
+			}
+
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Admin Data By Name Error"))
+		}
+
+		response := res.AdminDomaintoAdminResponse(result)
+
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Admin Data By Name", response))
+	} else {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Query Param Input"))
 	}
-
-	response := res.AdminDomaintoAdminResponse(result)
-
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Admin Data", response))
 }
 
 func (c *AdminControllerImpl) GetAdminsController(ctx echo.Context) error {
@@ -125,23 +148,6 @@ func (c *AdminControllerImpl) GetAdminsController(ctx echo.Context) error {
 	response := res.ConvertAdminResponse(result)
 
 	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Admin Data", response))
-}
-
-func (c *AdminControllerImpl) GetAdminByNameController(ctx echo.Context) error {
-	adminName := ctx.QueryParam("name")
-
-	result, err := c.AdminService.FindByName(ctx, adminName)
-	if err != nil {
-		if strings.Contains(err.Error(), "admin not found") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admin Not Found"))
-		}
-
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Admin Data By Name Error"))
-	}
-
-	response := res.AdminDomaintoAdminResponse(result)
-
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Admin Data By Name", response))
 }
 
 func (c *AdminControllerImpl) UpdateAdminController(ctx echo.Context) error {
