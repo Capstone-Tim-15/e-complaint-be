@@ -9,9 +9,5 @@ import (
 )
 
 func LoadEnv() {
-	err := godotenv.Load(filepath.Join(".", ".env"))
-	if err != nil {
-		fmt.Println("Error loading .env file")
-		os.Exit(1)
-	}
+	godotenv.Load(".env")
 }
