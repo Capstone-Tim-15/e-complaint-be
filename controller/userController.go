@@ -18,7 +18,6 @@ type UserController interface {
 	LoginUserController(ctx echo.Context) error
 	GetUserController(ctx echo.Context) error
 	GetUsersController(ctx echo.Context) error
-	// GetUserByNameController(ctx echo.Context) error
 	UpdateUserController(ctx echo.Context) error
 	ResetPasswordController(ctx echo.Context) error
 	DeleteUserController(ctx echo.Context) error
@@ -43,12 +42,10 @@ func (c *UserControllerImpl) RegisterUserController(ctx echo.Context) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
-
 		}
 
 		if strings.Contains(err.Error(), "email already exist") {
 			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
-
 		}
 
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
