@@ -15,12 +15,12 @@ import (
 type AdminService interface {
 	CreateAdmin(ctx echo.Context, request web.AdminCreateRequest) (*domain.Admin, error)
 	LoginAdmin(ctx echo.Context, request web.AdminLoginRequest) (*domain.Admin, error)
-	FindById(ctx echo.Context, id int) (*domain.Admin, error)
+	FindById(ctx echo.Context, id string) (*domain.Admin, error)
 	FindAll(ctx echo.Context) ([]domain.Admin, error)
 	FindByName(ctx echo.Context, name string) (*domain.Admin, error)
-	UpdateAdmin(ctx echo.Context, request web.AdminUpdateRequest, id int) (*domain.Admin, error)
+	UpdateAdmin(ctx echo.Context, request web.AdminUpdateRequest, id string) (*domain.Admin, error)
 	ResetPassword(ctx echo.Context, request web.AdminResetPasswordRequest) (*domain.Admin, error)
-	DeleteAdmin(ctx echo.Context, id int) error
+	DeleteAdmin(ctx echo.Context, id string) error
 }
 
 type AdminServiceImpl struct {
@@ -80,7 +80,7 @@ func (context *AdminServiceImpl) LoginAdmin(ctx echo.Context, request web.AdminL
 	return existingAdmin, nil
 }
 
-func (context *AdminServiceImpl) FindById(ctx echo.Context, id int) (*domain.Admin, error) {
+func (context *AdminServiceImpl) FindById(ctx echo.Context, id string) (*domain.Admin, error) {
 
 	existingAdmin, _ := context.AdminRepository.FindById(id)
 	if existingAdmin == nil {
@@ -108,7 +108,7 @@ func (context *AdminServiceImpl) FindAll(ctx echo.Context) ([]domain.Admin, erro
 	return admin, nil
 }
 
-func (context *AdminServiceImpl) UpdateAdmin(ctx echo.Context, request web.AdminUpdateRequest, id int) (*domain.Admin, error) {
+func (context *AdminServiceImpl) UpdateAdmin(ctx echo.Context, request web.AdminUpdateRequest, id string) (*domain.Admin, error) {
 
 	err := context.Validate.Struct(request)
 	if err != nil {
@@ -168,7 +168,7 @@ func (context *AdminServiceImpl) ResetPassword(ctx echo.Context, request web.Adm
 
 }
 
-func (context *AdminServiceImpl) DeleteAdmin(ctx echo.Context, id int) error {
+func (context *AdminServiceImpl) DeleteAdmin(ctx echo.Context, id string) error {
 
 	existingAdmin, _ := context.AdminRepository.FindById(id)
 	if existingAdmin == nil {

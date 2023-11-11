@@ -7,13 +7,13 @@ type AdminCreateResponse struct {
 }
 
 type AdminReponse struct {
-	Id    uint   `json:"id"`
+	Id    string   `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
 type UpdateAdminReponse struct {
-	Id       uint   `json:"id"`
+	Id       string   `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`

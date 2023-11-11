@@ -3,6 +3,7 @@ package repository
 import (
 	"ecomplaint/model/domain"
 	"ecomplaint/model/schema"
+	"ecomplaint/utils/helper"
 	"ecomplaint/utils/req"
 	"ecomplaint/utils/res"
 
@@ -11,13 +12,13 @@ import (
 
 type AdminRepository interface {
 	Create(admin *domain.Admin) (*domain.Admin, error)
-	FindById(id int) (*domain.Admin, error)
+	FindById(id string) (*domain.Admin, error)
 	FindByEmail(email string) (*domain.Admin, error)
 	FindAll() ([]domain.Admin, error)
 	FindByName(name string) (*domain.Admin, error)
-	Update(admin *domain.Admin, id int) (*domain.Admin, error)
+	Update(admin *domain.Admin, id string) (*domain.Admin, error)
 	ResetPassword(admin *domain.Admin, email string) (*domain.Admin, error)
-	Delete(id int) error
+	Delete(id string) error
 }
 
 type AdminRepositoryImpl struct {
@@ -29,7 +30,18 @@ func NewAdminRepository(DB *gorm.DB) AdminRepository {
 }
 
 func (repository *AdminRepositoryImpl) Create(admin *domain.Admin) (*domain.Admin, error) {
-	adminDb := req.AdminDomaintoAdminSchema(*admin)
+	var adminDb *schema.Admin
+
+	for {
+		adminDb = req.AdminDomaintoAdminSchema(*admin)
+		adminDb.ID = helper.GenerateRandomString()
+
+		result := repository.DB.First(&admin, adminDb.ID)
+		if result.Error != nil {
+			break
+		}
+	}
+
 	result := repository.DB.Create(&adminDb)
 	if result.Error != nil {
 		return nil, result.Error
@@ -40,10 +52,10 @@ func (repository *AdminRepositoryImpl) Create(admin *domain.Admin) (*domain.Admi
 	return admin, nil
 }
 
-func (repository *AdminRepositoryImpl) FindById(id int) (*domain.Admin, error) {
+func (repository *AdminRepositoryImpl) FindById(id string) (*domain.Admin, error) {
 	admin := domain.Admin{}
 
-	result := repository.DB.First(&admin, id)
+	result := repository.DB.Where("id = ?", id).First(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -85,7 +97,7 @@ func (repository *AdminRepositoryImpl) FindByName(name string) (*domain.Admin, e
 	return &author, nil
 }
 
-func (repository *AdminRepositoryImpl) Update(admin *domain.Admin, id int) (*domain.Admin, error) {
+func (repository *AdminRepositoryImpl) Update(admin *domain.Admin, id string) (*domain.Admin, error) {
 	adminDb := req.AdminDomaintoAdminSchema(*admin)
 
 	result := repository.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
@@ -111,7 +123,7 @@ func (repository *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, email 
 	return admin, nil
 }
 
-func (repository *AdminRepositoryImpl) Delete(id int) error {
+func (repository *AdminRepositoryImpl) Delete(id string) error {
 	result := repository.DB.Table("admins").Where("id = ?", id).Delete(&schema.Admin{})
 	if result.Error != nil {
 		return result.Error
