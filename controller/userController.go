@@ -6,7 +6,6 @@ import (
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/res"
 	"net/http"
-	"strconv"
 
 	"strings"
 
@@ -18,7 +17,6 @@ type UserController interface {
 	LoginUserController(ctx echo.Context) error
 	GetUserController(ctx echo.Context) error
 	GetUsersController(ctx echo.Context) error
-	// GetUserByNameController(ctx echo.Context) error
 	UpdateUserController(ctx echo.Context) error
 	ResetPasswordController(ctx echo.Context) error
 	DeleteUserController(ctx echo.Context) error
@@ -43,12 +41,10 @@ func (c *UserControllerImpl) RegisterUserController(ctx echo.Context) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
-
 		}
 
 		if strings.Contains(err.Error(), "email already exist") {
 			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
-
 		}
 
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
@@ -81,7 +77,7 @@ func (c *UserControllerImpl) LoginUserController(ctx echo.Context) error {
 
 	userLoginResponse := res.UserDomainToUserLoginResponse(response)
 
-	token, err := helper.GenerateToken(&userLoginResponse, uint(response.ID))
+	token, err := helper.GenerateToken(&userLoginResponse, response.ID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Generate JWT Error"))
 	}
@@ -100,23 +96,19 @@ func (c *UserControllerImpl) GetUserController(ctx echo.Context) error {
 	}
 
 	if idQueryParam != "" {
-		userIdInt, err := strconv.Atoi(idQueryParam)
-		if err != nil {
-			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
-		}
 
-		result, err := c.UserService.FindById(ctx, userIdInt)
+		result, err := c.UserService.FindById(ctx, idQueryParam)
 		if err != nil {
 			if strings.Contains(err.Error(), "users not found") {
 				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Users Not Found"))
 			}
 
-			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All Users Data Error"))
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get User Data By Id Error"))
 		}
 
 		response := res.UserDomaintoUserResponse(result)
 
-		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Users Data", response))
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get User Data By Id", response))
 
 	} else if nameQueryParam != "" {
 		result, err := c.UserService.FindByName(ctx, nameQueryParam)
@@ -153,18 +145,14 @@ func (c *UserControllerImpl) GetUsersController(ctx echo.Context) error {
 
 func (c *UserControllerImpl) UpdateUserController(ctx echo.Context) error {
 	userId := ctx.Param("id")
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
-	}
 
 	userUpdateRequest := web.UserUpdateRequest{}
-	err = ctx.Bind(&userUpdateRequest)
+	err := ctx.Bind(&userUpdateRequest)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
 
-	result, err := c.UserService.UpdateUser(ctx, userUpdateRequest, userIdInt)
+	result, err := c.UserService.UpdateUser(ctx, userUpdateRequest, userId)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
@@ -213,12 +201,8 @@ func (c *UserControllerImpl) ResetPasswordController(ctx echo.Context) error {
 
 func (c *UserControllerImpl) DeleteUserController(ctx echo.Context) error {
 	userId := ctx.Param("id")
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
-	}
 
-	err = c.UserService.DeleteUser(ctx, userIdInt)
+	err := c.UserService.DeleteUser(ctx, userId)
 	if err != nil {
 		if strings.Contains(err.Error(), "user not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("User Not Found"))

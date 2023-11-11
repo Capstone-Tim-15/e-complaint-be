@@ -1,14 +1,14 @@
 package helper
 
 import (
-	"os"
 	"ecomplaint/model/web"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(userLoginResponse *web.UserLoginResponse, id uint) (string, error) {
+func GenerateToken(userLoginResponse *web.UserLoginResponse, id string) (string, error) {
 	expireTime := time.Now().Add(time.Hour * 1).Unix()
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
@@ -26,7 +26,7 @@ func GenerateToken(userLoginResponse *web.UserLoginResponse, id uint) (string, e
 	return validToken, nil
 }
 
-func GenerateAdminToken(adminLoginResponse *web.AdminLoginResponse, id uint) (string, error) {
+func GenerateAdminToken(adminLoginResponse *web.AdminLoginResponse, id string) (string, error) {
 	expireTime := time.Now().Add(time.Hour * 1).Unix()
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
