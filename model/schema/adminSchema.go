@@ -7,7 +7,7 @@ import (
 )
 
 type Admin struct {
-	ID        uint           `gorm:"primaryKey"`
+	ID        string         `gorm:"primaryKey"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`

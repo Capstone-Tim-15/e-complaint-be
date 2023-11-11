@@ -1,12 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"ecomplaint/model/domain"
 	"ecomplaint/model/web"
 	"ecomplaint/repository"
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/req"
+	"fmt"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -15,12 +15,12 @@ import (
 type UserService interface {
 	CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error)
 	LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error)
-	FindById(ctx echo.Context, id int) (*domain.User, error)
+	FindById(ctx echo.Context, id string) (*domain.User, error)
 	FindAll(ctx echo.Context) ([]domain.User, error)
 	FindByName(ctx echo.Context, name string) (*domain.User, error)
-	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id int) (*domain.User, error)
+	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error)
 	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error)
-	DeleteUser(ctx echo.Context, id int) error
+	DeleteUser(ctx echo.Context, id string) error
 }
 
 type UserServiceImpl struct {
@@ -80,9 +80,13 @@ func (context *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLogi
 	return existingUser, nil
 }
 
-func (context *UserServiceImpl) FindById(ctx echo.Context, id int) (*domain.User, error) {
+func (s *UserServiceImpl) FindById(ctx echo.Context, id string) (*domain.User, error) {
 
-	existingUser, _ := context.UserRepository.FindById(id)
+	existingUser, err := s.UserRepository.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -108,7 +112,7 @@ func (context *UserServiceImpl) FindByName(ctx echo.Context, name string) (*doma
 	return user, nil
 }
 
-func (context *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id int) (*domain.User, error) {
+func (context *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error) {
 
 	err := context.Validate.Struct(request)
 	if err != nil {
@@ -167,7 +171,7 @@ func (context *UserServiceImpl) ResetPassword(ctx echo.Context, request web.User
 
 }
 
-func (context *UserServiceImpl) DeleteUser(ctx echo.Context, id int) error {
+func (context *UserServiceImpl) DeleteUser(ctx echo.Context, id string) error {
 
 	existingUser, _ := context.UserRepository.FindById(id)
 	if existingUser == nil {
