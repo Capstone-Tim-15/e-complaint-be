@@ -6,7 +6,6 @@ import (
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/res"
 	"net/http"
-	"strconv"
 
 	"strings"
 
@@ -18,7 +17,6 @@ type UserController interface {
 	LoginUserController(ctx echo.Context) error
 	GetUserController(ctx echo.Context) error
 	GetUsersController(ctx echo.Context) error
-	GetUserByNameController(ctx echo.Context) error
 	UpdateUserController(ctx echo.Context) error
 	ResetPasswordController(ctx echo.Context) error
 	DeleteUserController(ctx echo.Context) error
@@ -90,24 +88,44 @@ func (c *UserControllerImpl) LoginUserController(ctx echo.Context) error {
 }
 
 func (c *UserControllerImpl) GetUserController(ctx echo.Context) error {
-	userId := ctx.Param("id")
-	userIdInt, err := strconv.Atoi(userId)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
+	idQueryParam := ctx.QueryParam("id")
+	nameQueryParam := ctx.QueryParam("name")
+
+	if idQueryParam != "" && nameQueryParam != "" {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Both 'id' and 'name' query params are provided, please provide only one"))
 	}
 
-	result, err := c.UserService.FindById(ctx, userIdInt)
-	if err != nil {
-		if strings.Contains(err.Error(), "users not found") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Users Not Found"))
+	if idQueryParam != "" {
+
+		result, err := c.UserService.FindById(ctx, idQueryParam)
+		if err != nil {
+			if strings.Contains(err.Error(), "users not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Users Not Found"))
+			}
+
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get User Data By Id Error"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All Users Data Error"))
+		response := res.UserDomaintoUserResponse(result)
+
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get User Data By Id", response))
+
+	} else if nameQueryParam != "" {
+		result, err := c.UserService.FindByName(ctx, nameQueryParam)
+		if err != nil {
+			if strings.Contains(err.Error(), "user not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("User Not Found"))
+			}
+
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get User Data By Name Error"))
+		}
+
+		response := res.UserDomaintoUserResponse(result)
+
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get User Data By Name", response))
+	} else {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Query Param Input"))
 	}
-
-	response := res.UserDomaintoUserResponse(result)
-
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Users Data", response))
 }
 
 func (c *UserControllerImpl) GetUsersController(ctx echo.Context) error {
