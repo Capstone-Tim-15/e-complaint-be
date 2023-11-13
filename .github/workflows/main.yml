@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: "development"
+    branches: "release"
 
 jobs:
   build:
@@ -41,4 +41,4 @@ jobs:
             docker rm ${{ secrets.CNAME }}
             docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/complain
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/complain
-            docker run --name ${{ secrets.CNAME }} -p 8080:8080 -d -e DB_HOST=${{secrets.DB_HOST}} -e DB_PORT=3306 -e DB_USER=${{secrets.DB_USER}} -e DB_NAME=${{secrets.DB_NAME}} -e DB_PASS=${{secrets.DB_PASS}} -e JWT_SECRET=${{secrets.JWT_SECRET}} ${{ secrets.DOCKERHUB_USERNAME }}/complain
+            docker run --name ${{ secrets.CNAME }} -p 8000:8000 -d -e DB_HOST=${{secrets.DB_HOST}} -e DB_PORT=3306 -e DB_USER=${{secrets.DB_USER}} -e DB_NAME=${{secrets.DB_NAME}} -e DB_PASS=${{secrets.DB_PASS}} -e JWT_SECRET=${{secrets.JWT_SECRET}} ${{ secrets.DOCKERHUB_USERNAME }}/complain
