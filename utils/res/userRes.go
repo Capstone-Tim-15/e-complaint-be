@@ -18,6 +18,7 @@ func UserSchemaToUserDomain(user *schema.User) *domain.User {
 		ID:       user.ID,
 		Name:     user.Name,
 		Email:    user.Email,
+		Phone:    user.Phone,
 		Password: user.Password,
 	}
 }
@@ -27,6 +28,7 @@ func UserDomaintoUserResponse(user *domain.User) web.UserResponse {
 		Id:    user.ID,
 		Name:  user.Name,
 		Email: user.Email,
+		Phone: user.Phone,
 	}
 }
 
@@ -37,6 +39,7 @@ func ConvertUserResponse(users []domain.User) []web.UserResponse {
 			Id:    user.ID,
 			Name:  user.Name,
 			Email: user.Email,
+			Phone: user.Phone,
 		}
 		results = append(results, userResponse)
 	}

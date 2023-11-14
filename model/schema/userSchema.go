@@ -13,10 +13,10 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	Name      string
 	Email     string
-	Phone     int
+	Phone     string
 	Password  string
-	OTP       OTP        `gorm:"ForeignKey:User_ID;references:ID"`
-	Complaint []Complaint`gorm:"ForeignKey:User_ID;references:ID"`
-	Feedback  []Feedback `gorm:"ForeignKey:User_ID;references:ID"`
-	Likes     []Likes    `gorm:"ForeignKey:User_ID;references:ID"`
+	OTP       OTP         `gorm:"ForeignKey:User_ID;references:ID"`
+	Complaint []Complaint `gorm:"ForeignKey:User_ID;references:ID"`
+	Feedback  []Feedback  `gorm:"ForeignKey:User_ID;references:ID"`
+	Likes     []Likes     `gorm:"ForeignKey:User_ID;references:ID"`
 }
