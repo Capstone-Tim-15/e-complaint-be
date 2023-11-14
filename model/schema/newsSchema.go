@@ -1,9 +1,8 @@
 package schema
 
 import (
-	"time"
-
 	"gorm.io/gorm"
+	"time"
 )
 
 type News struct {

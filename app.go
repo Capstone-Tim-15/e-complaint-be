@@ -1,9 +1,9 @@
 package main
 
 import (
-	"net/http"
 	"ecomplaint/config"
 	"ecomplaint/routes"
+	"net/http"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -21,6 +21,7 @@ func main() {
 
 	routes.UserRoutes(app, DB, validate)
 	routes.AdminRoutes(app, DB, validate)
+	routes.NewsRoutes(app, DB, validate)
 
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
