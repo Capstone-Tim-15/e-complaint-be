@@ -3,6 +3,7 @@ package web
 type AdminCreateRequest struct {
 	Name     string `json:"name" form:"name" validate:"required,min=1,max=255"`
 	Email    string `json:"email" form:"email" validate:"required,email,min=1,max=255"`
+	Phone    string `json:"phone" form:"phone" validate:"required,min=1,max=14"`
 	Password string `json:"password" form:"password" validate:"required,min=8,max=255"`
 }
 
@@ -14,6 +15,7 @@ type AdminLoginRequest struct {
 type AdminUpdateRequest struct {
 	Name     string `json:"name" form:"name" validate:"min=1,max=255"`
 	Email    string `json:"email" form:"email" validate:"email,min=1,max=255"`
+	Phone    string `json:"phone" form:"phone" validate:"required,min=1,max=14"`
 	Password string `json:"password" form:"password" validate:"min=8,max=255"`
 }
 

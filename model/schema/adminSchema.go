@@ -13,8 +13,8 @@ type Admin struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	Name      string
 	Email     string
+	Phone     string
 	Password  string
-	Complaint []Complaint`gorm:"ForeignKey:Admin_ID;references:ID"`
-	News	  []News	`gorm:"ForeignKey:Admin_ID;references:ID"`
-	
+	Complaint []Complaint `gorm:"ForeignKey:Admin_ID;references:ID"`
+	News      []News      `gorm:"ForeignKey:Admin_ID;references:ID"`
 }
