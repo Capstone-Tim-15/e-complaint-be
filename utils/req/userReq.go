@@ -10,6 +10,7 @@ func UserCreateRequestToUserDomain(request web.UserCreateRequest) *domain.User {
 	return &domain.User{
 		Name:     request.Name,
 		Email:    request.Email,
+		Phone:    request.Phone,
 		Password: request.Password,
 	}
 }
@@ -25,6 +26,7 @@ func UserUpdateRequestToUserDomain(request web.UserUpdateRequest) *domain.User {
 	return &domain.User{
 		Name:     request.Name,
 		Email:    request.Email,
+		Phone:    request.Phone,
 		Password: request.Password,
 	}
 }
@@ -39,6 +41,7 @@ func UserDomaintoUserSchema(request domain.User) *schema.User {
 	return &schema.User{
 		Name:     request.Name,
 		Email:    request.Email,
+		Phone:    request.Phone,
 		Password: request.Password,
 	}
 }
