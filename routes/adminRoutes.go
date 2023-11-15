@@ -23,7 +23,7 @@ func AdminRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	adminsGroup.POST("/register", adminController.RegisterAdminController)
 	adminsGroup.POST("/login", adminController.LoginAdminController)
 
-	adminsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
+	adminsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
 	adminsGroup.GET("/search", adminController.GetAdminController)
 	adminsGroup.GET("", adminController.GetAdminsController)

@@ -10,6 +10,7 @@ func AdminCreateRequestToAdminDomain(request web.AdminCreateRequest) *domain.Adm
 	return &domain.Admin{
 		Name:     request.Name,
 		Email:    request.Email,
+		Phone:    request.Phone,
 		Password: request.Password,
 	}
 }
@@ -25,6 +26,7 @@ func AdminUpdateRequestToAdminDomain(request web.AdminUpdateRequest) *domain.Adm
 	return &domain.Admin{
 		Name:     request.Name,
 		Email:    request.Email,
+		Phone:    request.Phone,
 		Password: request.Password,
 	}
 }
@@ -39,6 +41,7 @@ func AdminDomaintoAdminSchema(request domain.Admin) *schema.Admin {
 	return &schema.Admin{
 		Name:     request.Name,
 		Email:    request.Email,
+		Phone:    request.Phone,
 		Password: request.Password,
 	}
 }

@@ -1,21 +1,17 @@
 package web
 
-type AdminCreateResponse struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Token string `json:"token"`
-}
-
 type AdminReponse struct {
-	Id    string   `json:"id"`
+	Id    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Phone string `json:"phone"`
 }
 
 type UpdateAdminReponse struct {
-	Id       string   `json:"id"`
+	Id       string `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
+	Phone    string `json:"phone"`
 	Password string `json:"password"`
 }
 
