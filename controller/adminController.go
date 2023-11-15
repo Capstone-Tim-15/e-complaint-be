@@ -4,7 +4,8 @@ import (
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/res"
+	"ecomplaint/utils/helper/middleware"
+	res "ecomplaint/utils/response"
 	"net/http"
 
 	"strings"
@@ -79,7 +80,7 @@ func (c *AdminControllerImpl) LoginAdminController(ctx echo.Context) error {
 
 	adminLoginResponse := res.AdminDomainToAdminLoginResponse(response)
 
-	token, err := helper.GenerateAdminToken(&adminLoginResponse, response.ID)
+	token, err := middleware.GenerateAdminToken(&adminLoginResponse, response.ID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Generate JWT Error"))
 	}
