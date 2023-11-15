@@ -4,8 +4,8 @@ import (
 	"ecomplaint/model/domain"
 	"ecomplaint/model/schema"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/req"
-	"ecomplaint/utils/res"
+	req "ecomplaint/utils/request"
+	res "ecomplaint/utils/response"
 
 	"gorm.io/gorm"
 )
@@ -62,7 +62,6 @@ func (r *UserRepositoryImpl) FindById(id string) (*domain.User, error) {
 
 	return &user, nil
 }
-
 
 func (r *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error) {
 	user := domain.User{}

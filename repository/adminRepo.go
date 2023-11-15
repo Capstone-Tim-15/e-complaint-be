@@ -4,8 +4,8 @@ import (
 	"ecomplaint/model/domain"
 	"ecomplaint/model/schema"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/req"
-	"ecomplaint/utils/res"
+	req "ecomplaint/utils/request"
+	res "ecomplaint/utils/response"
 
 	"gorm.io/gorm"
 )
