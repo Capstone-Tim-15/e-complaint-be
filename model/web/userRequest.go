@@ -3,7 +3,8 @@ package web
 type UserCreateRequest struct {
 	Name     string `json:"name" form:"name" validate:"required,min=1,max=255"`
 	Email    string `json:"email" form:"email" validate:"required,email,min=1,max=255"`
-	Password string `json:"password" form:"password" validate:"required,min=8,max=255"`
+	Phone    string `json:"phone" form:"phone" validate:"required,min=1,max=14"`
+	Password string `json:"password" form:"password" validate:"required,min=8,max=16"`
 }
 
 type UserLoginRequest struct {
@@ -12,9 +13,10 @@ type UserLoginRequest struct {
 }
 
 type UserUpdateRequest struct {
-	Name     string `json:"name" form:"name" validate:"min=1,max=255"`
-	Email    string `json:"email" form:"email" validate:"email,min=1,max=255"`
-	Password string `json:"password" form:"password" validate:"min=8,max=255"`
+	Name     string `json:"name" form:"name" validate:"required,min=1,max=255"`
+	Email    string `json:"email" form:"email" validate:"required,email,min=1,max=255"`
+	Phone    string `json:"phone" form:"phone" validate:"required,phone,min=1,max=255"`
+	Password string `json:"password" form:"password" validate:"required,min=8,max=255"`
 }
 
 type UserResetPasswordRequest struct {

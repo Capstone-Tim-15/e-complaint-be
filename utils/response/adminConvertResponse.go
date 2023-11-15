@@ -1,4 +1,4 @@
-package res
+package response
 
 import (
 	"ecomplaint/model/domain"
@@ -18,6 +18,7 @@ func AdminSchemaToAdminDomain(admin *schema.Admin) *domain.Admin {
 		ID:       admin.ID,
 		Name:     admin.Name,
 		Email:    admin.Email,
+		Phone:    admin.Phone,
 		Password: admin.Password,
 	}
 }
@@ -27,6 +28,7 @@ func AdminDomaintoAdminResponse(admin *domain.Admin) web.AdminReponse {
 		Id:    admin.ID,
 		Name:  admin.Name,
 		Email: admin.Email,
+		Phone: admin.Phone,
 	}
 }
 
@@ -37,6 +39,7 @@ func ConvertAdminResponse(admins []domain.Admin) []web.AdminReponse {
 			Id:    admin.ID,
 			Name:  admin.Name,
 			Email: admin.Email,
+			Phone: admin.Phone,
 		}
 		results = append(results, adminResponse)
 	}
