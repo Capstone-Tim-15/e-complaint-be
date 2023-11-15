@@ -36,7 +36,7 @@ func GenerateAdminToken(adminLoginResponse *web.AdminLoginResponse, id string) (
 	claims["exp"] = expireTime
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	validToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	validToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_ADMIN")))
 	if err != nil {
 		return "", err
 	}
