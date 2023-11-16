@@ -18,7 +18,7 @@ func UserRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	userService := service.NewUserService(userRepository, validate)
 	userController := controller.NewUserController(userService)
 
-	usersGroup := e.Group("users")
+	usersGroup := e.Group("user")
 
 	usersGroup.POST("/register", userController.RegisterUserController)
 	usersGroup.POST("/login", userController.LoginUserController)

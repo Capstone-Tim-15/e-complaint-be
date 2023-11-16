@@ -4,7 +4,8 @@ import (
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/res"
+	"ecomplaint/utils/helper/middleware"
+	res "ecomplaint/utils/response"
 	"net/http"
 
 	"strings"
@@ -77,7 +78,7 @@ func (c *UserControllerImpl) LoginUserController(ctx echo.Context) error {
 
 	userLoginResponse := res.UserDomainToUserLoginResponse(response)
 
-	token, err := helper.GenerateToken(&userLoginResponse, response.ID)
+	token, err := middleware.GenerateToken(&userLoginResponse, response.ID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Generate JWT Error"))
 	}

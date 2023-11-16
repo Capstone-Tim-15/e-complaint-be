@@ -1,4 +1,4 @@
-package req
+package request
 
 import (
 	"ecomplaint/model/domain"

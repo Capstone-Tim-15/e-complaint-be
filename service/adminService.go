@@ -1,12 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"ecomplaint/model/domain"
 	"ecomplaint/model/web"
 	"ecomplaint/repository"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/req"
+	req "ecomplaint/utils/request"
+	"fmt"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
