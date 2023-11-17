@@ -74,7 +74,6 @@ func (repository *NewsRepositoryImpl) FindById(id string) (*domain.News, error) 
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	println(result)
 	return &news, nil
 }
 

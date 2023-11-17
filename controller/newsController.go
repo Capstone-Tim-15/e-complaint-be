@@ -5,7 +5,6 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -30,7 +29,6 @@ func NewNewsController(newsService service.NewsService) NewsController {
 func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 	newsID := ctx.QueryParam("id")
 
-	fmt.Println(newsID)
 	result, err := c.NewsService.FindById(ctx, newsID)
 	if err != nil {
 		if strings.Contains(err.Error(), "news not found") {
@@ -52,7 +50,10 @@ func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 func (c *NewsControllerImpl) GetAllNewsController(ctx echo.Context) error {
 	result, err := c.NewsService.FindByAll(ctx)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All News Error"))
+		if strings.Contains(err.Error(), "news not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
+		}
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All News Data Error"))
 	}
 
 	response := res.ConvertNewsResponse(result)
@@ -68,7 +69,10 @@ func (c *NewsControllerImpl) CreateNewsController(ctx echo.Context) error {
 	}
 	result, err := c.NewsService.CreateNews(ctx, newsCreateRequest)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Internal Server Error"))
+		if strings.Contains(err.Error(), "validation failed") {
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
+		}
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Create News Error"))
 	}
 	response := res.NewsDomainToNewsResponse(result)
 
@@ -103,10 +107,9 @@ func (c *NewsControllerImpl) DeleteNewsController(ctx echo.Context) error {
 	newsId := ctx.Param("id")
 	err := c.NewsService.DeleteNews(ctx, newsId)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Param Id"))
-	}
-	err = c.NewsService.DeleteNews(ctx, newsId)
-	if err != nil {
+		if strings.Contains(err.Error(), "news not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
+		}
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Delete News Data Error"))
 	}
 	return ctx.JSON(http.StatusNoContent, nil)
