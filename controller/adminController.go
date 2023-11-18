@@ -51,6 +51,11 @@ func (c *AdminControllerImpl) RegisterAdminController(ctx echo.Context) error {
 
 		}
 
+		if strings.Contains(err.Error(), "username already exist") {
+			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Username Already Exist"))
+
+		}
+
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
 	}
 

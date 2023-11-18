@@ -14,6 +14,7 @@ type UserRepository interface {
 	Create(user *domain.User) (*domain.User, error)
 	FindById(id string) (*domain.User, error)
 	FindByEmail(email string) (*domain.User, error)
+	FindByUsername(username string) (*domain.User, error)
 	FindAll() ([]domain.User, error)
 	FindByName(name string) (*domain.User, error)
 	Update(user *domain.User, id string) (*domain.User, error)
@@ -67,6 +68,17 @@ func (r *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error) {
 	user := domain.User{}
 
 	result := r.DB.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) FindByUsername(username string) (*domain.User, error) {
+	user := domain.User{}
+
+	result := r.DB.Where("username = ?", username).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}

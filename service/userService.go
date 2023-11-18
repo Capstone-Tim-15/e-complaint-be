@@ -42,8 +42,13 @@ func (s *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateReq
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := s.UserRepository.FindByEmail(request.Email)
-	if existingUser != nil {
+	existingUserName, _ := s.UserRepository.FindByUsername(request.Username)	
+	if existingUserName != nil {
+		return nil, fmt.Errorf("username already exist")
+	}
+
+	existingEmail, _ := s.UserRepository.FindByEmail(request.Email)
+	if existingEmail != nil {
 		return nil, fmt.Errorf("email already exist")
 	}
 
@@ -65,7 +70,7 @@ func (s *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLoginReque
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, err := s.UserRepository.FindByEmail(request.Email)
+	existingUser, err := s.UserRepository.FindByUsername(request.Username)
 	if err != nil {
 		return nil, fmt.Errorf("invalid email or password")
 	}
