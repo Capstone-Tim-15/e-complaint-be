@@ -28,7 +28,11 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/complain:latest
-      -  
+     
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      -
         name: connect ssh
         uses: appleboy/ssh-action@v0.1.9
         with:
@@ -41,24 +45,24 @@ jobs:
             docker rm ${{ secrets.CNAME }}
             docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/complain
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/complain
-             docker run --name ${{ secrets.CNAME }} \
-            -p 8000:8000 \
-            -d \
-            -e DB_HOST=${{secrets.DB_HOST}} \
-            -e DB_PORT=3306 \
-            -e DB_USER=${{secrets.DB_USER}} \
-            -e DB_NAME=${{secrets.DB_NAME}} \
-            -e DB_PASS=${{secrets.DB_PASS}} \
-            -e JWT_SECRET=${{secrets.JWT_SECRET}} \
-            -e JWT_SECRET_ADMIN=${{secrets.JWT_SECRET_ADMIN}} \
-            -e OPEN_AI_TOKEN=${{secrets.OPEN_AI_TOKEN}} \
-            -e FIREBASE_URL=${{secrets.FIREBASE_URL}} \
-            -e SMTP_SERVER=${{secrets.SMTP_SERVER}} \
-            -e SMTP_PORT=${{secrets.SMTP_PORT}} \
-            -e SMTP_USERNAME=${{secrets.SMTP_USERNAME}} \
-            -e SMTP_PASSWORD=${{secrets.SMTP_PASSWORD}} \
-            -e SENDER_EMAIL=${{secrets.SENDER_EMAIL}} \
-            -e CLOUDINARY_NAME=${{secrets.CLOUDINARY_NAME}} \
-            -e CLOUDINARY_API_KEY=${{secrets.CLOUDINARY_API_KEY}} \
-            -e CLOUDINARY_API_SECRET=${{secrets.CLOUDINARY_API_SECRET}} \
-            ${{ secrets.DOCKERHUB_USERNAME }}/complain
+            docker run --name ${{ secrets.CNAME }} \
+              -p 8000:8000 \
+              -d \
+              -e DB_HOST=${{secrets.DB_HOST}} \
+              -e DB_PORT=3306 \
+              -e DB_USER=${{secrets.DB_USER}} \
+              -e DB_NAME=${{secrets.DB_NAME}} \
+              -e DB_PASS=${{secrets.DB_PASS}} \
+              -e JWT_SECRET=${{secrets.JWT_SECRET}} \
+              -e JWT_SECRET_ADMIN=${{secrets.JWT_SECRET_ADMIN}} \
+              -e OPEN_AI_TOKEN=${{secrets.OPEN_AI_TOKEN}} \
+              -e FIREBASE_URL=${{secrets.FIREBASE_URL}} \
+              -e SMTP_SERVER=${{secrets.SMTP_SERVER}} \
+              -e SMTP_PORT=${{secrets.SMTP_PORT}} \
+              -e SMTP_USERNAME=${{secrets.SMTP_USERNAME}} \
+              -e SMTP_PASSWORD=${{secrets.SMTP_PASSWORD}} \
+              -e SENDER_EMAIL=${{secrets.SENDER_EMAIL}} \
+              -e CLOUDINARY_NAME=${{secrets.CLOUDINARY_NAME}} \
+              -e CLOUDINARY_API_KEY=${{secrets.CLOUDINARY_API_KEY}} \
+              -e CLOUDINARY_API_SECRET=${{secrets.CLOUDINARY_API_SECRET}} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/complain
