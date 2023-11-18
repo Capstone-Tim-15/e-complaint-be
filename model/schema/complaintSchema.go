@@ -15,7 +15,7 @@ type Complaint struct {
 	Category_ID string         `gorm:"column:category_id;size:191"`
 	Admin_ID    string         `gorm:"column:admin_id;size:191"`
 	Title       string
-	Status      status `gorm:"type:varchar(255)"`
+	Status      status `gorm:"type:enum('SOLVED', 'UNSOLVED', 'CANCELLED')"`
 	Attachment  string
 	URL         string
 	Message     []Message `gorm:"ForeignKey:Complaint_ID;references:ID"`
