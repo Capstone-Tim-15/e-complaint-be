@@ -6,5 +6,5 @@ import (
 )
 
 func LoadEnv() {
-	err := godotenv.Load(".env")
+	godotenv.Load(".env")
 }
