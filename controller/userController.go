@@ -49,6 +49,11 @@ func (c *UserControllerImpl) RegisterUserController(ctx echo.Context) error {
 			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
 		}
 
+		if strings.Contains(err.Error(), "username already exist") {
+			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Username Already Exist"))
+
+		}
+
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
 	}
 

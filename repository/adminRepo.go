@@ -16,6 +16,7 @@ type AdminRepository interface {
 	FindByEmail(email string) (*domain.Admin, error)
 	FindAll() ([]domain.Admin, error)
 	FindByName(name string) (*domain.Admin, error)
+	FindByUsername(username string) (*domain.Admin, error)
 	Update(admin *domain.Admin, id string) (*domain.Admin, error)
 	ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error)
 	Delete(id string) error
@@ -67,6 +68,17 @@ func (r *AdminRepositoryImpl) FindByEmail(email string) (*domain.Admin, error) {
 	admin := domain.Admin{}
 
 	result := r.DB.Where("email = ?", email).First(&admin)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &admin, nil
+}
+
+func (r *AdminRepositoryImpl) FindByUsername(username string) (*domain.Admin, error) {
+	admin := domain.Admin{}
+
+	result := r.DB.Where("username = ?", username).First(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}
