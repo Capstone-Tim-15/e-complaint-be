@@ -10,6 +10,7 @@ import (
 
 	"strings"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -178,7 +179,11 @@ func (c *UserControllerImpl) ResetPasswordController(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
 
-	result, err := c.UserService.ResetPassword(ctx, resetPasswordRequest)
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := (claims["id"].(string))
+
+	result, err := c.UserService.ResetPassword(ctx, resetPasswordRequest, ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))

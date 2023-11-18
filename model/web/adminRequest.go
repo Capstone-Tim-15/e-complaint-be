@@ -20,7 +20,6 @@ type AdminUpdateRequest struct {
 }
 
 type AdminResetPasswordRequest struct {
-	Email              string `json:"email" form:"email" validate:"email,min=1,max=255"`
 	NewPassword        string `json:"newPassword" form:"password" validate:"min=8,max=255"`
 	ConfirmNewPassword string `json:"confirmNewPassword" form:"confirmNewPassword" validate:"min=8,max=255"`
 }

@@ -19,7 +19,7 @@ type UserService interface {
 	FindAll(ctx echo.Context) ([]domain.User, error)
 	FindByName(ctx echo.Context, name string) (*domain.User, error)
 	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error)
-	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error)
+	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error)
 	DeleteUser(ctx echo.Context, id string) error
 }
 
@@ -139,13 +139,13 @@ func (s *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateReq
 	return result, nil
 }
 
-func (s *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error) {
+func (s *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error) {
 	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := s.UserRepository.FindByEmail(request.Email)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -157,12 +157,12 @@ func (s *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetP
 	user := req.UserResetPasswordRequestToUserDomain(request)
 	user.Password = helper.HashPassword(user.Password)
 
-	_, err = s.UserRepository.ResetPassword(user, request.Email)
+	_, err = s.UserRepository.ResetPassword(user, id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
 
-	result, err := s.UserRepository.FindByEmail(request.Email)
+	result, err := s.UserRepository.FindById(id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}

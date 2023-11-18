@@ -17,7 +17,7 @@ type AdminRepository interface {
 	FindAll() ([]domain.Admin, error)
 	FindByName(name string) (*domain.Admin, error)
 	Update(admin *domain.Admin, id string) (*domain.Admin, error)
-	ResetPassword(admin *domain.Admin, email string) (*domain.Admin, error)
+	ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error)
 	Delete(id string) error
 }
 
@@ -110,10 +110,10 @@ func (r *AdminRepositoryImpl) Update(admin *domain.Admin, id string) (*domain.Ad
 	return admin, nil
 }
 
-func (r *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, email string) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error) {
 	adminDb := req.AdminDomaintoAdminSchema(*admin)
 
-	result := r.DB.Table("admins").Where("email = ?", email).Updates(adminDb)
+	result := r.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
