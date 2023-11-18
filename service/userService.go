@@ -19,7 +19,7 @@ type UserService interface {
 	FindAll(ctx echo.Context) ([]domain.User, error)
 	FindByName(ctx echo.Context, name string) (*domain.User, error)
 	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error)
-	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error)
+	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error)
 	DeleteUser(ctx echo.Context, id string) error
 }
 
@@ -35,14 +35,14 @@ func NewUserService(userRepository repository.UserRepository, validate *validato
 	}
 }
 
-func (r *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error) {
+func (s *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error) {
 
-	err := r.Validate.Struct(request)
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := r.UserRepository.FindByEmail(request.Email)
+	existingUser, _ := s.UserRepository.FindByEmail(request.Email)
 	if existingUser != nil {
 		return nil, fmt.Errorf("email already exist")
 	}
@@ -51,7 +51,7 @@ func (r *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateReq
 
 	user.Password = helper.HashPassword(user.Password)
 
-	result, err := r.UserRepository.Create(user)
+	result, err := s.UserRepository.Create(user)
 	if err != nil {
 		return nil, fmt.Errorf("error when creating user: %s", err.Error())
 	}
@@ -59,13 +59,13 @@ func (r *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateReq
 	return result, nil
 }
 
-func (r *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error) {
-	err := r.Validate.Struct(request)
+func (s *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error) {
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, err := r.UserRepository.FindByEmail(request.Email)
+	existingUser, err := s.UserRepository.FindByEmail(request.Email)
 	if err != nil {
 		return nil, fmt.Errorf("invalid email or password")
 	}
@@ -94,8 +94,8 @@ func (s *UserServiceImpl) FindById(ctx echo.Context, id string) (*domain.User, e
 	return existingUser, nil
 }
 
-func (r *UserServiceImpl) FindAll(ctx echo.Context) ([]domain.User, error) {
-	users, err := r.UserRepository.FindAll()
+func (s *UserServiceImpl) FindAll(ctx echo.Context) ([]domain.User, error) {
+	users, err := s.UserRepository.FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("users not found")
 	}
@@ -112,14 +112,14 @@ func (r *UserServiceImpl) FindByName(ctx echo.Context, name string) (*domain.Use
 	return user, nil
 }
 
-func (r *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error) {
+func (s *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error) {
 
-	err := r.Validate.Struct(request)
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := r.UserRepository.FindById(id)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -127,11 +127,11 @@ func (r *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateReq
 	user := req.UserUpdateRequestToUserDomain(request)
 	user.Password = helper.HashPassword(user.Password)
 
-	_, err = r.UserRepository.Update(user, id)
+	_, err = s.UserRepository.Update(user, id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
-	result, err := r.UserRepository.FindById(id)
+	result, err := s.UserRepository.FindById(id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
@@ -139,13 +139,13 @@ func (r *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateReq
 	return result, nil
 }
 
-func (r *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error) {
-	err := r.Validate.Struct(request)
+func (s *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error) {
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := r.UserRepository.FindByEmail(request.Email)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -157,12 +157,12 @@ func (r *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetP
 	user := req.UserResetPasswordRequestToUserDomain(request)
 	user.Password = helper.HashPassword(user.Password)
 
-	_, err = r.UserRepository.ResetPassword(user, request.Email)
+	_, err = s.UserRepository.ResetPassword(user, id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
 
-	result, err := r.UserRepository.FindByEmail(request.Email)
+	result, err := s.UserRepository.FindById(id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
@@ -171,14 +171,14 @@ func (r *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetP
 
 }
 
-func (r *UserServiceImpl) DeleteUser(ctx echo.Context, id string) error {
+func (s *UserServiceImpl) DeleteUser(ctx echo.Context, id string) error {
 
-	existingUser, _ := r.UserRepository.FindById(id)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return fmt.Errorf("user not found")
 	}
 
-	err := r.UserRepository.Delete(id)
+	err := s.UserRepository.Delete(id)
 	if err != nil {
 		return fmt.Errorf("error when deleting user: %s", err)
 	}

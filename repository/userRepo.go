@@ -17,7 +17,7 @@ type UserRepository interface {
 	FindAll() ([]domain.User, error)
 	FindByName(name string) (*domain.User, error)
 	Update(user *domain.User, id string) (*domain.User, error)
-	ResetPassword(user *domain.User, email string) (*domain.User, error)
+	ResetPassword(user *domain.User, id string) (*domain.User, error)
 	Delete(id string) error
 }
 
@@ -111,10 +111,10 @@ func (r *UserRepositoryImpl) Update(user *domain.User, id string) (*domain.User,
 	return user, nil
 }
 
-func (r *UserRepositoryImpl) ResetPassword(user *domain.User, email string) (*domain.User, error) {
+func (r *UserRepositoryImpl) ResetPassword(user *domain.User, id string) (*domain.User, error) {
 	userDb := req.UserDomaintoUserSchema(*user)
 
-	result := r.DB.Table("users").Where("email = ?", email).Updates(userDb)
+	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
