@@ -3,21 +3,23 @@ package repository
 import (
 	"ecomplaint/model/domain"
 	"ecomplaint/model/schema"
-	"ecomplaint/utils/req"
-	"ecomplaint/utils/res"
+	"ecomplaint/utils/helper"
+	req "ecomplaint/utils/request"
+	res "ecomplaint/utils/response"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	Create(user *domain.User) (*domain.User, error)
-	FindById(id int) (*domain.User, error)
+	FindById(id string) (*domain.User, error)
 	FindByEmail(email string) (*domain.User, error)
+	FindByUsername(username string) (*domain.User, error)
 	FindAll() ([]domain.User, error)
 	FindByName(name string) (*domain.User, error)
-	Update(user *domain.User, id int) (*domain.User, error)
-	ResetPassword(user *domain.User, email string) (*domain.User, error)
-	Delete(id int) error
+	Update(user *domain.User, id string) (*domain.User, error)
+	ResetPassword(user *domain.User, id string) (*domain.User, error)
+	Delete(id string) error
 }
 
 type UserRepositoryImpl struct {
@@ -28,9 +30,20 @@ func NewUserRepository(DB *gorm.DB) UserRepository {
 	return &UserRepositoryImpl{DB: DB}
 }
 
-func (repository *UserRepositoryImpl) Create(user *domain.User) (*domain.User, error) {
-	userDb := req.UserDomaintoUserSchema(*user)
-	result := repository.DB.Create(&userDb)
+func (r *UserRepositoryImpl) Create(user *domain.User) (*domain.User, error) {
+	var userDb *schema.User
+
+	for {
+		userDb = req.UserDomaintoUserSchema(*user)
+		userDb.ID = helper.GenerateRandomString()
+
+		result := r.DB.First(&user, userDb.ID)
+		if result.Error != nil {
+			break
+		}
+	}
+
+	result := r.DB.Create(&userDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -40,10 +53,10 @@ func (repository *UserRepositoryImpl) Create(user *domain.User) (*domain.User, e
 	return user, nil
 }
 
-func (repository *UserRepositoryImpl) FindById(id int) (*domain.User, error) {
+func (r *UserRepositoryImpl) FindById(id string) (*domain.User, error) {
 	user := domain.User{}
 
-	result := repository.DB.First(&user, id)
+	result := r.DB.Where("id = ?", id).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -51,10 +64,10 @@ func (repository *UserRepositoryImpl) FindById(id int) (*domain.User, error) {
 	return &user, nil
 }
 
-func (repository *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error) {
+func (r *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error) {
 	user := domain.User{}
 
-	result := repository.DB.Where("email = ?", email).First(&user)
+	result := r.DB.Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -62,10 +75,21 @@ func (repository *UserRepositoryImpl) FindByEmail(email string) (*domain.User, e
 	return &user, nil
 }
 
-func (repository *UserRepositoryImpl) FindAll() ([]domain.User, error) {
+func (r *UserRepositoryImpl) FindByUsername(username string) (*domain.User, error) {
+	user := domain.User{}
+
+	result := r.DB.Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) FindAll() ([]domain.User, error) {
 	user := []domain.User{}
 
-	result := repository.DB.Where("deleted_at IS NULL").Find(&user)
+	result := r.DB.Where("deleted_at IS NULL").Find(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -73,11 +97,11 @@ func (repository *UserRepositoryImpl) FindAll() ([]domain.User, error) {
 	return user, nil
 }
 
-func (repository *UserRepositoryImpl) FindByName(name string) (*domain.User, error) {
+func (r *UserRepositoryImpl) FindByName(name string) (*domain.User, error) {
 	user := domain.User{}
 
 	// Menggunakan query LIKE yang tidak case-sensitive
-	result := repository.DB.Where("LOWER(name) LIKE LOWER(?)", "%"+name+"%").First(&user)
+	result := r.DB.Where("LOWER(name) LIKE LOWER(?)", "%"+name+"%").First(&user)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -86,10 +110,10 @@ func (repository *UserRepositoryImpl) FindByName(name string) (*domain.User, err
 	return &user, nil
 }
 
-func (repository *UserRepositoryImpl) Update(user *domain.User, id int) (*domain.User, error) {
+func (r *UserRepositoryImpl) Update(user *domain.User, id string) (*domain.User, error) {
 	userDb := req.UserDomaintoUserSchema(*user)
 
-	result := repository.DB.Table("users").Where("id = ?", id).Updates(userDb)
+	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -99,10 +123,10 @@ func (repository *UserRepositoryImpl) Update(user *domain.User, id int) (*domain
 	return user, nil
 }
 
-func (repository *UserRepositoryImpl) ResetPassword(user *domain.User, email string) (*domain.User, error) {
+func (r *UserRepositoryImpl) ResetPassword(user *domain.User, id string) (*domain.User, error) {
 	userDb := req.UserDomaintoUserSchema(*user)
 
-	result := repository.DB.Table("users").Where("email = ?", email).Updates(userDb)
+	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -112,8 +136,8 @@ func (repository *UserRepositoryImpl) ResetPassword(user *domain.User, email str
 	return user, nil
 }
 
-func (repository *UserRepositoryImpl) Delete(id int) error {
-	result := repository.DB.Table("users").Where("id = ?", id).Delete(&schema.User{})
+func (r *UserRepositoryImpl) Delete(id string) error {
+	result := r.DB.Table("users").Where("id = ?", id).Delete(&schema.User{})
 	if result.Error != nil {
 		return result.Error
 	}

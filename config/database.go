@@ -1,9 +1,9 @@
 package config
 
 import (
+	"ecomplaint/model/schema"
 	"fmt"
 	"os"
-	"ecomplaint/model/schema"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -38,5 +38,5 @@ func ConnectDB() *gorm.DB {
 }
 
 func Migrate() {
-	DB.AutoMigrate(schema.User{}, schema.Admin{})
+	DB.AutoMigrate(schema.User{}, schema.Admin{}, schema.Category{}, schema.Complaint{}, schema.News{}, schema.OTP{}, schema.Message{}, schema.Feedback{}, schema.Likes{}, schema.FAQ{})
 }

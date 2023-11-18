@@ -4,12 +4,13 @@ import (
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/res"
+	"ecomplaint/utils/helper/middleware"
+	res "ecomplaint/utils/response"
 	"net/http"
-	"strconv"
 
 	"strings"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -50,6 +51,11 @@ func (c *AdminControllerImpl) RegisterAdminController(ctx echo.Context) error {
 
 		}
 
+		if strings.Contains(err.Error(), "username already exist") {
+			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Username Already Exist"))
+
+		}
+
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
 	}
 
@@ -80,7 +86,7 @@ func (c *AdminControllerImpl) LoginAdminController(ctx echo.Context) error {
 
 	adminLoginResponse := res.AdminDomainToAdminLoginResponse(response)
 
-	token, err := helper.GenerateAdminToken(&adminLoginResponse, uint(response.ID))
+	token, err := middleware.GenerateAdminToken(&adminLoginResponse, response.ID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Generate JWT Error"))
 	}
@@ -99,23 +105,18 @@ func (c *AdminControllerImpl) GetAdminController(ctx echo.Context) error {
 	}
 
 	if idQueryParam != "" {
-		userIdInt, err := strconv.Atoi(idQueryParam)
-		if err != nil {
-			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
-		}
-
-		result, err := c.AdminService.FindById(ctx, userIdInt)
+		result, err := c.AdminService.FindById(ctx, idQueryParam)
 		if err != nil {
 			if strings.Contains(err.Error(), "users not found") {
 				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admins Not Found"))
 			}
 
-			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All Admins Data Error"))
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Admin Data By Id Error"))
 		}
 
 		response := res.AdminDomaintoAdminResponse(result)
 
-		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Admins Data", response))
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Admin Data By Id", response))
 
 	} else if nameQueryParam != "" {
 		result, err := c.AdminService.FindByName(ctx, nameQueryParam)
@@ -152,18 +153,14 @@ func (c *AdminControllerImpl) GetAdminsController(ctx echo.Context) error {
 
 func (c *AdminControllerImpl) UpdateAdminController(ctx echo.Context) error {
 	adminId := ctx.Param("id")
-	adminIdInt, err := strconv.Atoi(adminId)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
-	}
 
 	adminUpdateRequest := web.AdminUpdateRequest{}
-	err = ctx.Bind(&adminUpdateRequest)
+	err := ctx.Bind(&adminUpdateRequest)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
 
-	result, err := c.AdminService.UpdateAdmin(ctx, adminUpdateRequest, adminIdInt)
+	result, err := c.AdminService.UpdateAdmin(ctx, adminUpdateRequest, adminId)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
@@ -188,7 +185,11 @@ func (c *AdminControllerImpl) ResetPasswordController(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
 
-	result, err := c.AdminService.ResetPassword(ctx, resetPasswordRequest)
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := (claims["id"].(string))
+
+	result, err := c.AdminService.ResetPassword(ctx, resetPasswordRequest, ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
@@ -212,12 +213,8 @@ func (c *AdminControllerImpl) ResetPasswordController(ctx echo.Context) error {
 
 func (c *AdminControllerImpl) DeleteAdminController(ctx echo.Context) error {
 	adminId := ctx.Param("id")
-	adminIdInt, err := strconv.Atoi(adminId)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Param Id"))
-	}
 
-	err = c.AdminService.DeleteAdmin(ctx, adminIdInt)
+	err := c.AdminService.DeleteAdmin(ctx, adminId)
 	if err != nil {
 		if strings.Contains(err.Error(), "admin not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admin Not Found"))

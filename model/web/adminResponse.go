@@ -1,26 +1,25 @@
 package web
 
-type AdminCreateResponse struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Token string `json:"token"`
-}
-
 type AdminReponse struct {
-	Id    uint   `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Id       string `json:"id"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
 }
 
 type UpdateAdminReponse struct {
-	Id       uint   `json:"id"`
+	Id       string `json:"id"`
 	Name     string `json:"name"`
+	Username string `json:"username"`
 	Email    string `json:"email"`
+	Phone    string `json:"phone"`
 	Password string `json:"password"`
 }
 
 type AdminLoginResponse struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Token string `json:"token"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Token    string `json:"token"`
 }

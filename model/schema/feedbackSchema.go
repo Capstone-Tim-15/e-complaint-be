@@ -6,16 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type Admin struct {
+type Feedback struct {
 	ID        string         `gorm:"primaryKey"`
 	CreatedAt time.Time      `gorm:"autoCreateTime"`
 	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	Name      string
-	Username  string
-	Email     string
-	Phone     string
-	Password  string
-	Complaint []Complaint `gorm:"ForeignKey:Admin_ID;references:ID"`
-	News      []News      `gorm:"ForeignKey:Admin_ID;references:ID"`
+	User_ID   string         `gorm:"column:user_id;size:191"`
+	News_ID   string         `gorm:"column:news_id;size:191"`
+	Content   string
 }

@@ -1,12 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"ecomplaint/model/domain"
 	"ecomplaint/model/web"
 	"ecomplaint/repository"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/req"
+	req "ecomplaint/utils/request"
+	"fmt"
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
@@ -15,12 +15,12 @@ import (
 type UserService interface {
 	CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error)
 	LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error)
-	FindById(ctx echo.Context, id int) (*domain.User, error)
+	FindById(ctx echo.Context, id string) (*domain.User, error)
 	FindAll(ctx echo.Context) ([]domain.User, error)
 	FindByName(ctx echo.Context, name string) (*domain.User, error)
-	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id int) (*domain.User, error)
-	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error)
-	DeleteUser(ctx echo.Context, id int) error
+	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error)
+	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error)
+	DeleteUser(ctx echo.Context, id string) error
 }
 
 type UserServiceImpl struct {
@@ -35,15 +35,20 @@ func NewUserService(userRepository repository.UserRepository, validate *validato
 	}
 }
 
-func (context *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error) {
+func (s *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error) {
 
-	err := context.Validate.Struct(request)
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := context.UserRepository.FindByEmail(request.Email)
-	if existingUser != nil {
+	existingUserName, _ := s.UserRepository.FindByUsername(request.Username)	
+	if existingUserName != nil {
+		return nil, fmt.Errorf("username already exist")
+	}
+
+	existingEmail, _ := s.UserRepository.FindByEmail(request.Email)
+	if existingEmail != nil {
 		return nil, fmt.Errorf("email already exist")
 	}
 
@@ -51,7 +56,7 @@ func (context *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCre
 
 	user.Password = helper.HashPassword(user.Password)
 
-	result, err := context.UserRepository.Create(user)
+	result, err := s.UserRepository.Create(user)
 	if err != nil {
 		return nil, fmt.Errorf("error when creating user: %s", err.Error())
 	}
@@ -59,13 +64,13 @@ func (context *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCre
 	return result, nil
 }
 
-func (context *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error) {
-	err := context.Validate.Struct(request)
+func (s *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error) {
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, err := context.UserRepository.FindByEmail(request.Email)
+	existingUser, err := s.UserRepository.FindByUsername(request.Username)
 	if err != nil {
 		return nil, fmt.Errorf("invalid email or password")
 	}
@@ -80,9 +85,13 @@ func (context *UserServiceImpl) LoginUser(ctx echo.Context, request web.UserLogi
 	return existingUser, nil
 }
 
-func (context *UserServiceImpl) FindById(ctx echo.Context, id int) (*domain.User, error) {
+func (s *UserServiceImpl) FindById(ctx echo.Context, id string) (*domain.User, error) {
 
-	existingUser, _ := context.UserRepository.FindById(id)
+	existingUser, err := s.UserRepository.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -90,8 +99,8 @@ func (context *UserServiceImpl) FindById(ctx echo.Context, id int) (*domain.User
 	return existingUser, nil
 }
 
-func (context *UserServiceImpl) FindAll(ctx echo.Context) ([]domain.User, error) {
-	users, err := context.UserRepository.FindAll()
+func (s *UserServiceImpl) FindAll(ctx echo.Context) ([]domain.User, error) {
+	users, err := s.UserRepository.FindAll()
 	if err != nil {
 		return nil, fmt.Errorf("users not found")
 	}
@@ -99,8 +108,8 @@ func (context *UserServiceImpl) FindAll(ctx echo.Context) ([]domain.User, error)
 	return users, nil
 }
 
-func (context *UserServiceImpl) FindByName(ctx echo.Context, name string) (*domain.User, error) {
-	user, _ := context.UserRepository.FindByName(name)
+func (r *UserServiceImpl) FindByName(ctx echo.Context, name string) (*domain.User, error) {
+	user, _ := r.UserRepository.FindByName(name)
 	if user == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -108,14 +117,14 @@ func (context *UserServiceImpl) FindByName(ctx echo.Context, name string) (*doma
 	return user, nil
 }
 
-func (context *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id int) (*domain.User, error) {
+func (s *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error) {
 
-	err := context.Validate.Struct(request)
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := context.UserRepository.FindById(id)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -123,11 +132,11 @@ func (context *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpd
 	user := req.UserUpdateRequestToUserDomain(request)
 	user.Password = helper.HashPassword(user.Password)
 
-	_, err = context.UserRepository.Update(user, id)
+	_, err = s.UserRepository.Update(user, id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
-	result, err := context.UserRepository.FindById(id)
+	result, err := s.UserRepository.FindById(id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
@@ -135,13 +144,13 @@ func (context *UserServiceImpl) UpdateUser(ctx echo.Context, request web.UserUpd
 	return result, nil
 }
 
-func (context *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest) (*domain.User, error) {
-	err := context.Validate.Struct(request)
+func (s *UserServiceImpl) ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error) {
+	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUser, _ := context.UserRepository.FindByEmail(request.Email)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return nil, fmt.Errorf("user not found")
 	}
@@ -153,12 +162,12 @@ func (context *UserServiceImpl) ResetPassword(ctx echo.Context, request web.User
 	user := req.UserResetPasswordRequestToUserDomain(request)
 	user.Password = helper.HashPassword(user.Password)
 
-	_, err = context.UserRepository.ResetPassword(user, request.Email)
+	_, err = s.UserRepository.ResetPassword(user, id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
 
-	result, err := context.UserRepository.FindByEmail(request.Email)
+	result, err := s.UserRepository.FindById(id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
@@ -167,14 +176,14 @@ func (context *UserServiceImpl) ResetPassword(ctx echo.Context, request web.User
 
 }
 
-func (context *UserServiceImpl) DeleteUser(ctx echo.Context, id int) error {
+func (s *UserServiceImpl) DeleteUser(ctx echo.Context, id string) error {
 
-	existingUser, _ := context.UserRepository.FindById(id)
+	existingUser, _ := s.UserRepository.FindById(id)
 	if existingUser == nil {
 		return fmt.Errorf("user not found")
 	}
 
-	err := context.UserRepository.Delete(id)
+	err := s.UserRepository.Delete(id)
 	if err != nil {
 		return fmt.Errorf("error when deleting user: %s", err)
 	}
