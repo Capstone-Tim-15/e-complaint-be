@@ -15,16 +15,17 @@ type Complaint struct {
 	Category_ID string         `gorm:"column:category_id;size:191"`
 	Admin_ID    string         `gorm:"column:admin_id;size:191"`
 	Title       string
-	Status      status `gorm:"type:varchar(255)"`
+	Content     string
+	Status      Status `gorm:"type:varchar(255)"`
 	Attachment  string
 	URL         string
 	Message     []Message `gorm:"ForeignKey:Complaint_ID;references:ID"`
 }
 
-type status string
+type Status string
 
 const (
-	SOLVED    status = "SOLVED"
-	UNSOLVED  status = "UNSOLVED"
-	CANCELLED status = "CANCELLED"
+	SOLVED    Status = "SOLVED"
+	UNSOLVED  Status = "UNSOLVED"
+	CANCELLED Status = "CANCELLED"
 )

@@ -6,6 +6,7 @@ type Complaint struct {
 	Category_ID string
 	Admin_ID    string
 	Title       string
+	Content     string
 	Status      string
 	Attachment  string
 	URL         string
