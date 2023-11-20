@@ -69,7 +69,7 @@ func (repository *NewsRepositoryImpl) Delete(id string) error {
 
 func (repository *NewsRepositoryImpl) FindById(id string) (*domain.News, error) {
 	news := domain.News{}
-	result := repository.DB.First(&news, "id = ?", id)
+	result := repository.DB.Preload("Feedback").Preload("Likes").First(&news, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -79,7 +79,7 @@ func (repository *NewsRepositoryImpl) FindById(id string) (*domain.News, error) 
 
 func (repository *NewsRepositoryImpl) FindByAll() ([]domain.News, error) {
 	news := []domain.News{}
-	result := repository.DB.Preload("Feedback").Preload("Likes").Where("deleted_at IS NULL").Find(&news)
+	result := repository.DB.Preload("Feedback").Preload("Likes").Find(&news)
 	if result.Error != nil {
 		return nil, result.Error
 	}
