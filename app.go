@@ -21,6 +21,7 @@ func main() {
 
 	routes.UserRoutes(app, DB, validate)
 	routes.AdminRoutes(app, DB, validate)
+	routes.ComplaintRoutes(app, DB, validate)
 	routes.OTPRoutes(app, DB, validate)
 
 	app.Pre(middleware.RemoveTrailingSlash())
