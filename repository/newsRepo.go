@@ -30,13 +30,11 @@ func (repository *NewsRepositoryImpl) Create(news *domain.News) (*domain.News, e
 	for {
 		newsDb = req.NewsDomaintoNewsSchema(*news)
 		newsDb.ID = helper.GenerateRandomString()
-
 		result := repository.DB.First(&news, newsDb.ID)
 		if result.Error != nil {
 			break
 		}
 	}
-
 	result := repository.DB.Create(&newsDb)
 
 	if result.Error != nil {
@@ -60,6 +58,7 @@ func (repository *NewsRepositoryImpl) Update(news *domain.News, id string) (*dom
 
 func (repository *NewsRepositoryImpl) Delete(id string) error {
 	result := repository.DB.Table("news").Where("id = ?", id).Delete(&schema.News{})
+
 	if result.Error != nil {
 		return result.Error
 	}
@@ -69,7 +68,7 @@ func (repository *NewsRepositoryImpl) Delete(id string) error {
 
 func (repository *NewsRepositoryImpl) FindById(id string) (*domain.News, error) {
 	news := domain.News{}
-	result := repository.DB.Preload("Feedback").Preload("Likes").First(&news, "id = ?", id)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Feedback").Preload("Likes").First(&news, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -79,7 +78,7 @@ func (repository *NewsRepositoryImpl) FindById(id string) (*domain.News, error) 
 
 func (repository *NewsRepositoryImpl) FindByAll() ([]domain.News, error) {
 	news := []domain.News{}
-	result := repository.DB.Preload("Feedback").Preload("Likes").Find(&news)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Feedback").Preload("Likes").Find(&news)
 	if result.Error != nil {
 		return nil, result.Error
 	}

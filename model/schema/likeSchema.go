@@ -13,5 +13,12 @@ type Likes struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	User_ID   string         `gorm:"column:user_id;size:191"`
 	News_ID   string         `gorm:"column:news_id;size:191"`
-	Status    string         `gorm:"type:varchar(255)"`
+	Status    LikeStatus     `gorm:"type:varchar(255)"`
 }
+
+type LikeStatus string
+
+const (
+	LIKE   LikeStatus = "LIKE"
+	UNLIKE LikeStatus = "DISLIKE"
+)

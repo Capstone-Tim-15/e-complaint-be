@@ -11,7 +11,7 @@ func LikesSchemaToLikesDomain(likes *schema.Likes) *domain.Likes {
 		ID:      likes.ID,
 		News_ID: likes.News_ID,
 		User_ID: likes.User_ID,
-		Status:  likes.Status,
+		Status:  string(likes.Status),
 	}
 }
 

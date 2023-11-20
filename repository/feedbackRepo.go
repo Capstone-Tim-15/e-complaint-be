@@ -27,12 +27,14 @@ func NewFeedbackRepository(DB *gorm.DB) FeedbackRepository {
 
 func (repository *FeedbackRepositoryImpl) Create(feedback *domain.Feedback) (*domain.Feedback, error) {
 	var feedbackDB *schema.Feedback
-	for {
-		feedbackDB = request.FeedbackDomaintoFeedbackSchema(*feedback)
-		feedbackDB.ID = helper.GenerateRandomString()
-		result := repository.DB.First(&feedback, feedbackDB.ID)
-		if result.Error != nil {
-			break
+	if feedbackDB == nil {
+		for {
+			feedbackDB = request.FeedbackDomaintoFeedbackSchema(*feedback)
+			feedbackDB.ID = helper.GenerateRandomString()
+			result := repository.DB.First(&feedback, feedbackDB.ID)
+			if result.Error != nil {
+				break
+			}
 		}
 	}
 	result := repository.DB.Create(&feedbackDB)
@@ -65,7 +67,7 @@ func (repository *FeedbackRepositoryImpl) Delete(id string) error {
 
 func (repository *FeedbackRepositoryImpl) FindById(id string) (*domain.Feedback, error) {
 	feedback := domain.Feedback{}
-	result := repository.DB.First(&feedback, "id = ?", id)
+	result := repository.DB.Where("deleted_at IS NULL").First(&feedback, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}

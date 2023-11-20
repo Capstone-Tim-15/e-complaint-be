@@ -25,7 +25,7 @@ func NewsDomainToNewsResponse(news *domain.News) web.NewsResponse {
 		Date:     news.Date,
 	}
 	for _, f := range news.Feedback {
-		feedbackResponse := domain.Feedback{
+		feedbackResponse := web.FeedbackResponse{
 			ID:      f.ID,
 			User_ID: f.User_ID,
 			News_ID: f.News_ID,
@@ -34,7 +34,7 @@ func NewsDomainToNewsResponse(news *domain.News) web.NewsResponse {
 		newsResponse.Feedback = append(newsResponse.Feedback, feedbackResponse)
 	}
 	for _, l := range news.Likes {
-		likesResponse := domain.Likes{
+		likesResponse := web.LikesResponse{
 			ID:      l.ID,
 			User_ID: l.User_ID,
 			News_ID: l.News_ID,
@@ -58,7 +58,7 @@ func ConvertNewsResponse(news []domain.News) []web.NewsResponse {
 			Date:     n.Date,
 		}
 		for _, f := range n.Feedback {
-			feedbackResponse := domain.Feedback{
+			feedbackResponse := web.FeedbackResponse{
 				ID:      f.ID,
 				User_ID: f.User_ID,
 				News_ID: f.News_ID,
@@ -67,7 +67,7 @@ func ConvertNewsResponse(news []domain.News) []web.NewsResponse {
 			newsResponse.Feedback = append(newsResponse.Feedback, feedbackResponse)
 		}
 		for _, l := range n.Likes {
-			likesResponse := domain.Likes{
+			likesResponse := web.LikesResponse{
 				ID:      l.ID,
 				User_ID: l.User_ID,
 				News_ID: l.News_ID,

@@ -27,6 +27,7 @@ func NewLikeRepository(DB *gorm.DB) LikeRepository {
 
 func (repository *LikeRepositoryImpl) Create(like *domain.Likes) (*domain.Likes, error) {
 	var likeDb *schema.Likes
+
 	for {
 		likeDb = request.LikeDomaintoLikeSchema(*like)
 		likeDb.ID = helper.GenerateRandomString()
@@ -63,7 +64,7 @@ func (repository *LikeRepositoryImpl) Delete(id string) error {
 
 func (repository *LikeRepositoryImpl) FindById(id string) (*domain.Likes, error) {
 	like := domain.Likes{}
-	result := repository.DB.First(&like, "id = ?", id)
+	result := repository.DB.Where("deleted_at IS NULL").First(&like, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}

@@ -27,6 +27,6 @@ func LikeDomaintoLikeSchema(request domain.Likes) *schema.Likes {
 		ID:      request.ID,
 		News_ID: request.News_ID,
 		User_ID: request.User_ID,
-		Status:  request.Status,
+		Status:  schema.LikeStatus(request.Status),
 	}
 }

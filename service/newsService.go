@@ -71,7 +71,7 @@ func (ns *NewsServiceImp) UpdateNews(ctx echo.Context, request web.NewsUpdateReq
 func (ns *NewsServiceImp) DeleteNews(ctx echo.Context, id string) error {
 	existingNews, _ := ns.NewsRepository.FindById(id)
 	if existingNews == nil {
-		return fmt.Errorf("news not Found")
+		return fmt.Errorf("news not found")
 	}
 	err := ns.NewsRepository.Delete(id)
 	if err != nil {
