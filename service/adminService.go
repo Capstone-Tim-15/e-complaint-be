@@ -19,7 +19,7 @@ type AdminService interface {
 	FindAll(ctx echo.Context) ([]domain.Admin, error)
 	FindByName(ctx echo.Context, name string) (*domain.Admin, error)
 	UpdateAdmin(ctx echo.Context, request web.AdminUpdateRequest, id string) (*domain.Admin, error)
-	ResetPassword(ctx echo.Context, request web.AdminResetPasswordRequest) (*domain.Admin, error)
+	ResetPassword(ctx echo.Context, request web.AdminResetPasswordRequest, id string) (*domain.Admin, error)
 	DeleteAdmin(ctx echo.Context, id string) error
 }
 
@@ -42,9 +42,14 @@ func (s *AdminServiceImpl) CreateAdmin(ctx echo.Context, request web.AdminCreate
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingAdmin, _ := s.AdminRepository.FindByEmail(request.Email)
-	if existingAdmin != nil {
+	existingUsername, _ := s.AdminRepository.FindByEmail(request.Email)
+	if existingUsername != nil {
 		return nil, fmt.Errorf("email already exist")
+	}
+
+	existingEmail, _ := s.AdminRepository.FindByUsername(request.Username)
+	if existingEmail != nil {
+		return nil, fmt.Errorf("username already exist")
 	}
 
 	admin := req.AdminCreateRequestToAdminDomain(request)
@@ -65,7 +70,7 @@ func (s *AdminServiceImpl) LoginAdmin(ctx echo.Context, request web.AdminLoginRe
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingAdmin, err := s.AdminRepository.FindByEmail(request.Email)
+	existingAdmin, err := s.AdminRepository.FindByUsername(request.Username)
 	if err != nil {
 		return nil, fmt.Errorf("invalid email or password")
 	}
@@ -136,15 +141,15 @@ func (s *AdminServiceImpl) UpdateAdmin(ctx echo.Context, request web.AdminUpdate
 	return result, nil
 }
 
-func (s *AdminServiceImpl) ResetPassword(ctx echo.Context, request web.AdminResetPasswordRequest) (*domain.Admin, error) {
+func (s *AdminServiceImpl) ResetPassword(ctx echo.Context, request web.AdminResetPasswordRequest, id string) (*domain.Admin, error) {
 	err := s.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingAdmin, _ := s.AdminRepository.FindByEmail(request.Email)
+	existingAdmin, _ := s.AdminRepository.FindById(id)
 	if existingAdmin == nil {
-		return nil, fmt.Errorf("user not found")
+		return nil, fmt.Errorf("admin not found")
 	}
 
 	if request.NewPassword != request.ConfirmNewPassword {
@@ -154,12 +159,12 @@ func (s *AdminServiceImpl) ResetPassword(ctx echo.Context, request web.AdminRese
 	user := req.AdminResetPasswordRequestToAdminDomain(request)
 	user.Password = helper.HashPassword(user.Password)
 
-	_, err = s.AdminRepository.ResetPassword(user, request.Email)
+	_, err = s.AdminRepository.ResetPassword(user, id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}
 
-	result, err := s.AdminRepository.FindByEmail(request.Email)
+	result, err := s.AdminRepository.FindById(id)
 	if err != nil {
 		return nil, fmt.Errorf("error when updating user: %s", err.Error())
 	}

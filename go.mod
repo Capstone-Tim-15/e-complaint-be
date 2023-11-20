@@ -5,6 +5,7 @@ go 1.21.0
 require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/cloudinary/cloudinary-go v1.7.0
+	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v5 v5.0.0
@@ -60,5 +61,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231012201019-e917dd12ba7a // indirect
 	google.golang.org/grpc v1.58.3 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 )

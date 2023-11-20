@@ -9,6 +9,7 @@ import (
 func UserCreateRequestToUserDomain(request web.UserCreateRequest) *domain.User {
 	return &domain.User{
 		Name:     request.Name,
+		Username: request.Username,
 		Email:    request.Email,
 		Phone:    request.Phone,
 		Password: request.Password,
@@ -17,7 +18,7 @@ func UserCreateRequestToUserDomain(request web.UserCreateRequest) *domain.User {
 
 func UserLoginRequestToUserDomain(request web.UserLoginRequest) *domain.User {
 	return &domain.User{
-		Email:    request.Email,
+		Username: request.Username,
 		Password: request.Password,
 	}
 }
@@ -25,6 +26,7 @@ func UserLoginRequestToUserDomain(request web.UserLoginRequest) *domain.User {
 func UserUpdateRequestToUserDomain(request web.UserUpdateRequest) *domain.User {
 	return &domain.User{
 		Name:     request.Name,
+		Username: request.Username,
 		Email:    request.Email,
 		Phone:    request.Phone,
 		Password: request.Password,
@@ -40,6 +42,7 @@ func UserResetPasswordRequestToUserDomain(request web.UserResetPasswordRequest) 
 func UserDomaintoUserSchema(request domain.User) *schema.User {
 	return &schema.User{
 		Name:     request.Name,
+		Username: request.Username,
 		Email:    request.Email,
 		Phone:    request.Phone,
 		Password: request.Password,
