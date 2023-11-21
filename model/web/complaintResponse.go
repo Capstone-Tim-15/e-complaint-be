@@ -1,9 +1,22 @@
 package web
 
 type ComplaintResponse struct {
-	Title      string `json:"title"`
-	Content    string `json:"content"`
-	Status     string `json:"status"`
-	Attachment string `json:"attachment"`
-	URL        string `json:"url"`
+	ID       string            `json:"id"`
+	User_ID  string            `json:"userId"`
+	Category string            `json:"category"`
+	Title    string            `json:"title"`
+	Content  string            `json:"content"`
+	Status   string            `json:"status"`
+	ImageUrl string            `json:"imageUrl"`
+	Comment  []CommentResponse `json:"comment"`
+}
+
+type ComplaintCreateResponse struct {
+	ID       string            `json:"id"`
+	User_ID  string            `json:"userId"`
+	Category string            `json:"category"`
+	Title    string            `json:"title"`
+	Content  string            `json:"content"`
+	Status   string            `json:"status"`
+	ImageUrl string            `json:"imageUrl"`
 }

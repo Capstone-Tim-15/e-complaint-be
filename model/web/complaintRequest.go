@@ -6,5 +6,5 @@ type ComplaintCreateRequest struct {
 	Title       string `json:"title" form:"title" validate:"min=1,max=255"`
 	Status      string `json:"status" form:"status" validate:"min=1,max=255"`
 	Content     string `json:"content" form:"content" validate:"min=1,max=255"`
-	Attachment  string
+	ImageUrl    string
 }
