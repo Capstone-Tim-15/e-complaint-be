@@ -23,6 +23,7 @@ func main() {
 	routes.AdminRoutes(app, DB, validate)
 	routes.ComplaintRoutes(app, DB, validate)
 	routes.OTPRoutes(app, DB, validate)
+	routes.MessRoutes(app, DB, validate)
 
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
