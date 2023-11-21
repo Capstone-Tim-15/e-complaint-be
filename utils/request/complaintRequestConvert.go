@@ -11,19 +11,21 @@ func ComplaintDomaintoComplaintSchema(request domain.Complaint) *schema.Complain
 		ID:          request.ID,
 		User_ID:     request.User_ID,
 		Category_ID: request.Category_ID,
-		Admin_ID:    request.Admin_ID,
 		Title:       request.Title,
+		Content:     request.Content,
 		Status:      schema.Status(request.Status),
-		Attachment:  request.Attachment,
-		URL:         request.URL,
+		ImageUrl:    request.ImageUrl,
 	}
 }
 
 func ComplaintCreateRequestToComplaintDomain(request web.ComplaintCreateRequest) *domain.Complaint {
 	return &domain.Complaint{
+		User_ID:     request.User_ID,
 		Category_ID: request.Category_ID,
 		Title:       request.Title,
 		Content:     request.Content,
 		Status:      request.Status,
+		ImageUrl:    request.ImageUrl,
+
 	}
 }

@@ -1,6 +1,6 @@
 package domain
 
-type Message struct {
+type Comment struct {
 	ID           string
 	Complaint_ID string
 	Role         string

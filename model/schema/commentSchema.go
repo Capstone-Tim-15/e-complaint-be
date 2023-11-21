@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type Message struct {
+type Comment struct {
 	ID           string    `gorm:"primaryKey"`
 	CreatedAt    time.Time `gorm:"autoCreateTime"`
 	Complaint_ID string    `gorm:"column:complaint_id;size:191"`
