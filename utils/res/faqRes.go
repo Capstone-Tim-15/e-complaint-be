@@ -23,6 +23,7 @@ func FAQDomaintoResponse(request *domain.FAQ) *web.FaqResponse {
 		Category_ID: request.Category_ID,
 	}
 }
+
 func ConvertFAQResponse(request []domain.FAQ) []web.FaqResponse {
 	var results []web.FaqResponse
 	for _, faq := range request {

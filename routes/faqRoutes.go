@@ -17,9 +17,8 @@ func FAQRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 
 	faqsGroup := e.Group("faq")
 
-	faqsGroup.POST("", faqController.CreateFaqController)
-	faqsGroup.GET("/:id", faqController.FindByIdController)
-	faqsGroup.GET("", faqController.FindAllController)
-	faqsGroup.GET("", faqController.FindByCategoryIDController)
-	faqsGroup.PUT("/:id", faqController.UpdateFaqController)
+	faqsGroup.POST("/create", faqController.CreateFaqController)
+	faqsGroup.GET("/find/:id", faqController.FindController)
+	faqsGroup.GET("/find", faqController.FindController)
+	faqsGroup.PUT("/update/:id", faqController.UpdateFaqController)
 }

@@ -6,14 +6,13 @@ import (
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/res"
 	"github.com/labstack/echo/v4"
+	"net/http"
 	"strings"
 )
 
 type FaqController interface {
 	CreateFaqController(ctx echo.Context) error
-	FindByIdController(ctx echo.Context) error
-	FindByCategoryIDController(ctx echo.Context) error
-	FindAllController(ctx echo.Context) error
+	FindController(ctx echo.Context) error
 	UpdateFaqController(ctx echo.Context) error
 }
 
@@ -29,61 +28,70 @@ func (ctrl *FaqControllerImpl) CreateFaqController(ctx echo.Context) error {
 	FaqRequest := web.FaqRequest{}
 	err := ctx.Bind(&FaqRequest)
 	if err != nil {
-		return ctx.JSON(400, err.Error())
+		return ctx.JSON(http.StatusBadRequest, err.Error())
 	}
 	result, err := ctrl.FaqService.CreateFaq(ctx, FaqRequest)
 	if err != nil {
-		return ctx.JSON(400, err.Error())
+		return ctx.JSON(http.StatusBadRequest, err.Error())
 	}
 	response := res.FAQDomaintoResponse(result)
 
 	return ctx.JSON(201, helper.SuccessResponse("Successfully Create FAQ", response))
 }
-func (ctrl *FaqControllerImpl) FindByIdController(ctx echo.Context) error {
-	id := ctx.Param("id")
-	result, err := ctrl.FaqService.FindById(ctx, id)
-	if err != nil {
-		return ctx.JSON(400, err.Error())
-	}
-	response := res.FAQDomaintoResponse(result)
+func (ctrl *FaqControllerImpl) FindController(ctx echo.Context) error {
+	paramID := ctx.Param("id")
+	queryID := ctx.QueryParam("id")
+	categoryID := ctx.QueryParam("category")
+	if categoryID != "" {
+		result, err := ctrl.FaqService.FindByCategory(ctx, categoryID)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, err.Error())
+		}
+		response := res.FAQDomaintoResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Find FAQ by category id", response))
+	} else if paramID != "" {
+		result, err := ctrl.FaqService.FindById(ctx, paramID)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		}
+		response := res.FAQDomaintoResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Success find data", response))
+	} else if queryID != "" {
+		result, err := ctrl.FaqService.FindById(ctx, queryID)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		}
+		response := res.FAQDomaintoResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Success find data", response))
+	} else if paramID == "" && queryID == "" && categoryID == "" {
+		result, err := ctrl.FaqService.FindAll(ctx)
+		if err != nil {
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		}
+		response := res.ConvertFAQResponse(result)
 
-	return ctx.JSON(200, helper.SuccessResponse("Successfully Find FAQ", response))
-}
-func (ctrl *FaqControllerImpl) FindByCategoryIDController(ctx echo.Context) error {
-	category := ctx.QueryParam("category")
-	result, err := ctrl.FaqService.FindByCategory(ctx, category)
-	if err != nil {
-		return ctx.JSON(400, err.Error())
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Success find all data", response))
+	} else {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("ID not found"))
 	}
-	response := res.FAQDomaintoResponse(result)
-
-	return ctx.JSON(200, helper.SuccessResponse("Successfully Find FAQ by category id", response))
 }
-func (ctrl *FaqControllerImpl) FindAllController(ctx echo.Context) error {
-	result, err := ctrl.FaqService.FindAll(ctx)
-	if err != nil {
-		return ctx.JSON(400, err.Error())
-	}
-	response := res.ConvertFAQResponse(result)
 
-	return ctx.JSON(200, helper.SuccessResponse("Successfully Find All FAQ", response))
-}
 func (ctrl *FaqControllerImpl) UpdateFaqController(ctx echo.Context) error {
 	id := ctx.Param("id")
-	FaqRequest := web.FaqRequest{}
+	FaqRequest := web.FaqUpdateRequest{}
 	err := ctx.Bind(&FaqRequest)
 	if err != nil {
-		return ctx.JSON(400, helper.ErrorResponse("Invalid Client Input"))
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
 	result, err := ctrl.FaqService.UpdateFaq(ctx, FaqRequest, id)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
-			return ctx.JSON(400, helper.ErrorResponse("Invalid Client Input"))
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 		}
 		if strings.Contains(err.Error(), "FAQ not found") {
 			return ctx.JSON(400, helper.ErrorResponse("FAQ Not Found"))
 		}
-		return ctx.JSON(400, helper.ErrorResponse("Update Error"))
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Update Error"))
 	}
 	response := res.FAQDomaintoResponse(result)
 

@@ -16,7 +16,7 @@ type FaqService interface {
 	FindById(ctx echo.Context, id string) (*domain.FAQ, error)
 	FindByCategory(ctx echo.Context, category string) (*domain.FAQ, error)
 	FindAll(ctx echo.Context) ([]domain.FAQ, error)
-	UpdateFaq(ctx echo.Context, request web.FaqRequest, id string) (*domain.FAQ, error)
+	UpdateFaq(ctx echo.Context, request web.FaqUpdateRequest, id string) (*domain.FAQ, error)
 }
 
 type FaqServiceImpl struct {
@@ -69,7 +69,7 @@ func (svc *FaqServiceImpl) FindAll(ctx echo.Context) ([]domain.FAQ, error) {
 	return result, nil
 }
 
-func (svc *FaqServiceImpl) UpdateFaq(ctx echo.Context, request web.FaqRequest, id string) (*domain.FAQ, error) {
+func (svc *FaqServiceImpl) UpdateFaq(ctx echo.Context, request web.FaqUpdateRequest, id string) (*domain.FAQ, error) {
 	err := svc.Validate.Struct(request)
 	if err != nil {
 		return nil, helper.ValidationError(ctx, err)
@@ -80,7 +80,7 @@ func (svc *FaqServiceImpl) UpdateFaq(ctx echo.Context, request web.FaqRequest, i
 		return nil, fmt.Errorf("FAQ not found")
 	}
 
-	faq := req.FAQRequestToFAQDomain(request)
+	faq := req.FAQUpdateToFAQDomain(request)
 
 	_, err = svc.FaqRepository.Update(faq, id)
 	if err != nil {

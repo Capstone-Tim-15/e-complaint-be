@@ -6,6 +6,7 @@ import (
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/req"
 	"ecomplaint/utils/res"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -81,10 +82,16 @@ func (repository *FAQRepositoryImpl) FindAll() ([]domain.FAQ, error) {
 }
 
 func (repository *FAQRepositoryImpl) Update(faq *domain.FAQ, id string) (*domain.FAQ, error) {
-	result := repository.DB.Where("id = ?", id).Updates(&faq)
+	faqDb := req.FAQDomaintoAdminSchema(*faq)
+	result := repository.DB.Table("faqs").Where("id = ?", id).Updates(faqDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
+	faq = res.FAQSchemaIntoDomain(faqDb)
+	fmt.Println(id)
+
+	fmt.Println(faq)
 
 	return faq, nil
 }
