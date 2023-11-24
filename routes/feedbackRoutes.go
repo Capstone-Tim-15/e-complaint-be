@@ -5,8 +5,10 @@ import (
 	"ecomplaint/repository"
 	"ecomplaint/service"
 	"github.com/go-playground/validator"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+	"os"
 )
 
 func FeedbackRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
@@ -15,6 +17,7 @@ func FeedbackRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	feedbackController := controller.NewFeedbackController(feedbackService)
 
 	feedbackGroup := e.Group("feedback")
+	feedbackGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 	feedbackGroup.POST("", feedbackController.CreateFeedbackController)
 	feedbackGroup.GET("/search", feedbackController.GetFeedbackController)
 	feedbackGroup.GET("", feedbackController.GetAllFeedbackController)

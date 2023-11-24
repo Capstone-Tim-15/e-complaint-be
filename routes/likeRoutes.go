@@ -5,8 +5,10 @@ import (
 	"ecomplaint/repository"
 	"ecomplaint/service"
 	"github.com/go-playground/validator"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+	"os"
 )
 
 func LikeRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
@@ -15,6 +17,7 @@ func LikeRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	likeController := controller.NewLikeController(likeService)
 
 	likeGroup := e.Group("like")
+	likeGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 	likeGroup.POST("", likeController.CreateLikeController)
 	likeGroup.GET("/search", likeController.GetLikeController)
 	likeGroup.GET("", likeController.GetAllLikeController)
