@@ -4,6 +4,7 @@ import (
 	"ecomplaint/model/domain"
 	"ecomplaint/model/schema"
 	"ecomplaint/model/web"
+	"time"
 )
 
 func NewsCreateRequestToNewsDomain(request web.NewsCreateRequest) *domain.News {
@@ -11,7 +12,7 @@ func NewsCreateRequestToNewsDomain(request web.NewsCreateRequest) *domain.News {
 		Admin_ID: request.Admin_ID,
 		Title:    request.Title,
 		Content:  request.Content,
-		Date:     request.Date,
+		Date:     time.Now(),
 	}
 }
 
