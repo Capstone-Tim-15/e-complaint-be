@@ -29,3 +29,10 @@ func ComplaintCreateRequestToComplaintDomain(request web.ComplaintCreateRequest)
 
 	}
 }
+
+func ComplaintUpdateRequestToComplaintDomain(request web.ComplaintUpdateRequest) *domain.Complaint {
+	return &domain.Complaint{
+		Category_ID: request.Category_ID,
+		Status:      request.Status,
+	}
+}

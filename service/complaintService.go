@@ -15,7 +15,10 @@ import (
 type ComplaintService interface {
 	CreateComplaint(ctx echo.Context, request web.ComplaintCreateRequest) (*domain.Complaint, error)
 	FindById(ctx echo.Context, id string) (*domain.Complaint, error)
+	FindByStatus(ctx echo.Context, status string) ([]domain.Complaint, error)
 	FindAll(ctx echo.Context) ([]domain.Complaint, error)
+	UpdateComplaint(ctx echo.Context, id string, request web.ComplaintUpdateRequest) (*domain.Complaint, error)
+	DeleteComplaint(ctx echo.Context, id string) error
 }
 
 type ComplaintServiceImpl struct {
@@ -59,6 +62,19 @@ func (s ComplaintServiceImpl) FindById(ctx echo.Context, id string) (*domain.Com
 	return complaint, nil
 }
 
+func (s ComplaintServiceImpl) FindByStatus(ctx echo.Context, status string) ([]domain.Complaint, error) {
+	complaints, err := s.ComplaintRepository.FindByStatus(status)
+	if err != nil {
+		return nil, err
+	}
+
+	if complaints == nil {
+		return nil, fmt.Errorf("complaints not found")
+	}
+
+	return complaints, nil
+}
+
 func (s *ComplaintServiceImpl) FindAll(ctx echo.Context) ([]domain.Complaint, error) {
 	complaints, err := s.ComplaintRepository.FindAll()
 	if err != nil {
@@ -66,4 +82,38 @@ func (s *ComplaintServiceImpl) FindAll(ctx echo.Context) ([]domain.Complaint, er
 	}
 
 	return complaints, nil
+}
+
+func (s *ComplaintServiceImpl) UpdateComplaint(ctx echo.Context, id string, request web.ComplaintUpdateRequest) (*domain.Complaint, error) {
+	err := s.Validate.Struct(request)
+	if err != nil {
+		return nil, helper.ValidationError(ctx, err)
+	}
+
+	complaint := req.ComplaintUpdateRequestToComplaintDomain(request)
+
+	result, err := s.ComplaintRepository.Update(complaint, id)
+	if err != nil {
+		return nil, fmt.Errorf("error when updating complaint: %s", err.Error())
+	}
+
+	return result, nil
+}
+
+func (s *ComplaintServiceImpl) DeleteComplaint(ctx echo.Context, id string) error {
+	complaint, err := s.ComplaintRepository.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	if complaint == nil {
+		return fmt.Errorf("complaint not found")
+	}
+
+	err = s.ComplaintRepository.Delete(complaint, id)
+	if err != nil {
+		return fmt.Errorf("error when deleting complaint: %s", err.Error())
+	}
+
+	return nil
 }
