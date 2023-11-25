@@ -14,7 +14,7 @@ type AdminRepository interface {
 	Create(admin *domain.Admin) (*domain.Admin, error)
 	FindById(id string) (*domain.Admin, error)
 	FindByEmail(email string) (*domain.Admin, error)
-	FindAll() ([]domain.Admin, error)
+	FindAll(page, pageSize int) ([]domain.Admin, int64, error)
 	FindByName(name string) (*domain.Admin, error)
 	FindByUsername(username string) (*domain.Admin, error)
 	Update(admin *domain.Admin, id string) (*domain.Admin, error)
@@ -86,15 +86,23 @@ func (r *AdminRepositoryImpl) FindByUsername(username string) (*domain.Admin, er
 	return &admin, nil
 }
 
-func (r *AdminRepositoryImpl) FindAll() ([]domain.Admin, error) {
-	admin := []domain.Admin{}
+func (r *AdminRepositoryImpl) FindAll(page, pageSize int) ([]domain.Admin, int64, error) {
+	offset := (page - 1) * pageSize
 
-	result := r.DB.Where("deleted_at IS NULL").Find(&admin)
-	if result.Error != nil {
-		return nil, result.Error
+	admins := []domain.Admin{}
+	var totalCount int64
+
+	resultCount := r.DB.Model(&domain.Admin{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
 	}
 
-	return admin, nil
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&admins)
+	if resultData.Error != nil {
+		return nil, 0, resultData.Error
+	}
+
+	return admins, totalCount, nil
 }
 
 func (r *AdminRepositoryImpl) FindByName(name string) (*domain.Admin, error) {

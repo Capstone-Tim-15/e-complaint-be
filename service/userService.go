@@ -16,7 +16,7 @@ type UserService interface {
 	CreateUser(ctx echo.Context, request web.UserCreateRequest) (*domain.User, error)
 	LoginUser(ctx echo.Context, request web.UserLoginRequest) (*domain.User, error)
 	FindById(ctx echo.Context, id string) (*domain.User, error)
-	FindAll(ctx echo.Context) ([]domain.User, error)
+	FindAll(ctx echo.Context, page, pageSize int) ([]domain.User, int64, error)
 	FindByName(ctx echo.Context, name string) (*domain.User, error)
 	UpdateUser(ctx echo.Context, request web.UserUpdateRequest, id string) (*domain.User, error)
 	ResetPassword(ctx echo.Context, request web.UserResetPasswordRequest, id string) (*domain.User, error)
@@ -42,7 +42,7 @@ func (s *UserServiceImpl) CreateUser(ctx echo.Context, request web.UserCreateReq
 		return nil, helper.ValidationError(ctx, err)
 	}
 
-	existingUserName, _ := s.UserRepository.FindByUsername(request.Username)	
+	existingUserName, _ := s.UserRepository.FindByUsername(request.Username)
 	if existingUserName != nil {
 		return nil, fmt.Errorf("username already exist")
 	}
@@ -99,13 +99,13 @@ func (s *UserServiceImpl) FindById(ctx echo.Context, id string) (*domain.User, e
 	return existingUser, nil
 }
 
-func (s *UserServiceImpl) FindAll(ctx echo.Context) ([]domain.User, error) {
-	users, err := s.UserRepository.FindAll()
+func (s *UserServiceImpl) FindAll(ctx echo.Context, page, pageSize int) ([]domain.User, int64, error) {
+	users, totalCount, err := s.UserRepository.FindAll(page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("users not found")
+		return nil, 0, fmt.Errorf("users not found")
 	}
 
-	return users, nil
+	return users, totalCount, nil
 }
 
 func (r *UserServiceImpl) FindByName(ctx echo.Context, name string) (*domain.User, error) {
