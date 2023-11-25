@@ -6,6 +6,7 @@ type UserResponse struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Phone    string `json:"phone"`
+	ImageUrl string `json:"imageUrl"`
 }
 
 type UpdateUserResponse struct {
