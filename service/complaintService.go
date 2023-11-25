@@ -15,7 +15,7 @@ import (
 type ComplaintService interface {
 	CreateComplaint(ctx echo.Context, request web.ComplaintCreateRequest) (*domain.Complaint, error)
 	FindById(ctx echo.Context, id string) (*domain.Complaint, error)
-	FindAll(ctx echo.Context) ([]domain.Complaint, error)
+	FindAll(ctx echo.Context, page, pageSize int) ([]domain.Complaint, int64, error)
 }
 
 type ComplaintServiceImpl struct {
@@ -59,11 +59,11 @@ func (s ComplaintServiceImpl) FindById(ctx echo.Context, id string) (*domain.Com
 	return complaint, nil
 }
 
-func (s *ComplaintServiceImpl) FindAll(ctx echo.Context) ([]domain.Complaint, error) {
-	complaints, err := s.ComplaintRepository.FindAll()
+func (s *ComplaintServiceImpl) FindAll(ctx echo.Context, page, pageSize int) ([]domain.Complaint, int64, error) {
+	complaints, totalCount, err := s.ComplaintRepository.FindAll(page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("complaints not found")
+		return nil, 0, fmt.Errorf("complaints not found")
 	}
 
-	return complaints, nil
+	return complaints, totalCount, nil
 }
