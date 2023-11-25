@@ -7,6 +7,7 @@ import (
 	"ecomplaint/utils/helper/middleware"
 	res "ecomplaint/utils/response"
 	"net/http"
+	"strconv"
 
 	"strings"
 
@@ -136,7 +137,14 @@ func (c *UserControllerImpl) GetUserController(ctx echo.Context) error {
 }
 
 func (c *UserControllerImpl) GetUsersController(ctx echo.Context) error {
-	result, err := c.UserService.FindAll(ctx)
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize := 10
+
+	result, totalCount, err := c.UserService.FindAll(ctx, page, pageSize)
 	if err != nil {
 		if strings.Contains(err.Error(), "users not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Users Not Found"))
@@ -147,7 +155,7 @@ func (c *UserControllerImpl) GetUsersController(ctx echo.Context) error {
 
 	response := res.ConvertUserResponse(result)
 
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get User Data", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get User Data", page, pageSize, totalCount, response))
 }
 
 func (c *UserControllerImpl) UpdateUserController(ctx echo.Context) error {

@@ -7,6 +7,7 @@ import (
 	"ecomplaint/utils/helper/middleware"
 	res "ecomplaint/utils/response"
 	"net/http"
+	"strconv"
 
 	"strings"
 
@@ -137,18 +138,25 @@ func (c *AdminControllerImpl) GetAdminController(ctx echo.Context) error {
 }
 
 func (c *AdminControllerImpl) GetAdminsController(ctx echo.Context) error {
-	result, err := c.AdminService.FindAll(ctx)
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize := 10
+
+	result, totalCount, err := c.AdminService.FindAll(ctx, page, pageSize)
 	if err != nil {
-		if strings.Contains(err.Error(), "admins not found") {
+		if strings.Contains(err.Error(), "users not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Admins Not Found"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All Admins Data Error"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Admins Data Error"))
 	}
 
 	response := res.ConvertAdminResponse(result)
 
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Admin Data", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Admin Data", page, pageSize, totalCount, response))
 }
 
 func (c *AdminControllerImpl) UpdateAdminController(ctx echo.Context) error {
