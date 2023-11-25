@@ -19,6 +19,7 @@ type AdminRepository interface {
 	FindByUsername(username string) (*domain.Admin, error)
 	Update(admin *domain.Admin, id string) (*domain.Admin, error)
 	ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error)
+	PhotoProfile(admin *domain.Admin, id string) (*domain.Admin, error)
 	Delete(id string) error
 }
 
@@ -131,6 +132,19 @@ func (r *AdminRepositoryImpl) Update(admin *domain.Admin, id string) (*domain.Ad
 }
 
 func (r *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error) {
+	adminDb := req.AdminDomaintoAdminSchema(*admin)
+
+	result := r.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	admin = res.AdminSchemaToAdminDomain(adminDb)
+
+	return admin, nil
+}
+
+func (r *AdminRepositoryImpl) PhotoProfile(admin *domain.Admin, id string) (*domain.Admin, error) {
 	adminDb := req.AdminDomaintoAdminSchema(*admin)
 
 	result := r.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
