@@ -15,7 +15,7 @@ type UserRepository interface {
 	FindById(id string) (*domain.User, error)
 	FindByEmail(email string) (*domain.User, error)
 	FindByUsername(username string) (*domain.User, error)
-	FindAll() ([]domain.User, error)
+	FindAll(page, pageSize int) ([]domain.User, int64, error)
 	FindByName(name string) (*domain.User, error)
 	Update(user *domain.User, id string) (*domain.User, error)
 	ResetPassword(user *domain.User, id string) (*domain.User, error)
@@ -86,15 +86,23 @@ func (r *UserRepositoryImpl) FindByUsername(username string) (*domain.User, erro
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) FindAll() ([]domain.User, error) {
-	user := []domain.User{}
+func (r *UserRepositoryImpl) FindAll(page, pageSize int) ([]domain.User, int64, error) {
+	offset := (page - 1) * pageSize
 
-	result := r.DB.Where("deleted_at IS NULL").Find(&user)
-	if result.Error != nil {
-		return nil, result.Error
+	users := []domain.User{}
+	var totalCount int64
+
+	resultCount := r.DB.Model(&domain.User{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
 	}
 
-	return user, nil
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&users)
+	if resultData.Error != nil {
+		return nil, 0, resultData.Error
+	}
+
+	return users, totalCount, nil
 }
 
 func (r *UserRepositoryImpl) FindByName(name string) (*domain.User, error) {
