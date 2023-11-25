@@ -4,17 +4,17 @@ import (
 	"time"
 )
 
-type Message struct {
+type Comment struct {
 	ID           string    `gorm:"primaryKey"`
 	CreatedAt    time.Time `gorm:"autoCreateTime"`
 	Complaint_ID string    `gorm:"column:complaint_id;size:191"`
-	Role         role      `gorm:"type:varchar(255)"`
+	Role         Role      `gorm:"type:varchar(255)"`
 	Message      string
 }
 
-type role string
+type Role string
 
 const (
-	USER  role = "USER"
-	ADMIN role = "ADMIN"
+	USER  Role = "USER"
+	ADMIN Role = "ADMIN"
 )
