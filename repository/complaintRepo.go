@@ -14,7 +14,7 @@ type ComplaintRepository interface {
 	Create(complaint *domain.Complaint) (*domain.Complaint, error)
 	FindById(id string) (*domain.Complaint, error)
 	FindByStatus(status string) ([]domain.Complaint, error)
-	FindAll() ([]domain.Complaint, error)
+	FindAll(page, pageSize int) ([]domain.Complaint, int64, error)
 	Update(complaint *domain.Complaint, id string) (*domain.Complaint, error)
 	Delete(complaint *domain.Complaint, id string) error
 }
@@ -73,15 +73,23 @@ func (r *ComplaintRepositoryImpl) FindByStatus(status string) ([]domain.Complain
 	return complaint, nil
 }
 
-func (r *ComplaintRepositoryImpl) FindAll() ([]domain.Complaint, error) {
-	complaint := []domain.Complaint{}
+func (r *ComplaintRepositoryImpl) FindAll(page, pageSize int) ([]domain.Complaint, int64, error) {
+	offset := (page - 1) * pageSize
 
-	result := r.DB.Where("deleted_at IS NULL").Preload("Category").Find(&complaint)
-	if result.Error != nil {
-		return nil, result.Error
+	complaints := []domain.Complaint{}
+	var totalCount int64
+
+	resultCount := r.DB.Model(&domain.Complaint{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
 	}
 
-	return complaint, nil
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&complaints)
+	if resultData.Error != nil {
+		return nil, 0, resultData.Error
+	}
+
+	return complaints, totalCount, nil
 }
 
 func (r *ComplaintRepositoryImpl) Update(complaint *domain.Complaint, id string) (*domain.Complaint, error) {

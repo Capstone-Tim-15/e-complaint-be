@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/cloudinary/cloudinary-go"
@@ -130,7 +131,14 @@ func (c *ComplaintControllerImpl) GetComplaintController(ctx echo.Context) error
 }
 
 func (c *ComplaintControllerImpl) GetComplaintsController(ctx echo.Context) error {
-	result, err := c.ComplaintService.FindAll(ctx)
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize := 10
+
+	result, totalCount, err := c.ComplaintService.FindAll(ctx, page, pageSize)
 	if err != nil {
 		if strings.Contains(err.Error(), "complaints not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaints Not Found"))
@@ -141,7 +149,7 @@ func (c *ComplaintControllerImpl) GetComplaintsController(ctx echo.Context) erro
 
 	response := res.ConvertComplaintResponse(result)
 
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Complaint Data", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint Data", page, pageSize, totalCount, response))
 }
 
 func (c *ComplaintControllerImpl) UpdateComplaintController(ctx echo.Context) error {
