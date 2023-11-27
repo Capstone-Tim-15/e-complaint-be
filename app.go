@@ -14,6 +14,7 @@ func main() {
 	app := echo.New()
 	validate := validator.New()
 	DB := config.ConnectDB()
+	AI := config.ConnectOpenAI()
 
 	app.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to RESTful API Services")
@@ -24,6 +25,7 @@ func main() {
 	routes.OTPRoutes(app, DB, validate)
 	routes.ComplaintRoutes(app, DB, validate)
 	routes.CommentRoutes(app, DB, validate)
+	routes.AIRoutes(app, AI)
 
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
