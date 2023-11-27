@@ -13,7 +13,7 @@ import (
 type ComplaintRepository interface {
 	Create(complaint *domain.Complaint) (*domain.Complaint, error)
 	FindById(id string) (*domain.Complaint, error)
-	FindByStatus(status string) ([]domain.Complaint, error)
+	FindByStatus(status string, page, pageSize int) ([]domain.Complaint, error)
 	FindAll(page, pageSize int) ([]domain.Complaint, int64, error)
 	Update(complaint *domain.Complaint, id string) (*domain.Complaint, error)
 	Delete(complaint *domain.Complaint, id string) error
@@ -62,10 +62,11 @@ func (r *ComplaintRepositoryImpl) FindById(id string) (*domain.Complaint, error)
 	return &complaint, nil
 }
 
-func (r *ComplaintRepositoryImpl) FindByStatus(status string) ([]domain.Complaint, error) {
+func (r *ComplaintRepositoryImpl) FindByStatus(status string, page, pageSize int) ([]domain.Complaint, error) {
+	offset := (page - 1) * pageSize
 	complaint := []domain.Complaint{}
 
-	result := r.DB.Debug().Where("status = ?", status).Preload("Comment").Preload("Category").Find(&complaint)
+	result := r.DB.Debug().Where("status = ?", status).Preload("Comment").Preload("Category").Offset(offset).Limit(pageSize).Find(&complaint)
 	if result.Error != nil {
 		return nil, result.Error
 	}
