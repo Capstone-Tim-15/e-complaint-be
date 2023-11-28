@@ -16,6 +16,6 @@ type Admin struct {
 	Email     string
 	Phone     string
 	Password  string
-	Complaint []Complaint `gorm:"ForeignKey:Admin_ID;references:ID"`
+	ImageUrl  string
 	News      []News      `gorm:"ForeignKey:Admin_ID;references:ID"`
 }
