@@ -67,12 +67,12 @@ func (r *ComplaintRepositoryImpl) FindByStatus(status string, page, pageSize int
 	complaint := []domain.Complaint{}
 	var totalCount int64
 
-	resultCount := r.DB.Where("status = ?", status).Where("deleted_at IS NULL").Count(&totalCount)
-	if resultCount.Error != nil{
+	resultCount := r.DB.Debug().Model(&domain.Complaint{}).Where("status = ?", status).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
 		return nil, 0, resultCount.Error
 	}
 
-	result := r.DB.Debug().Where("status = ?", status).Preload("Comment").Preload("Category").Offset(offset).Limit(pageSize).Find(&complaint)
+	result := r.DB.Where("status = ?", status).Preload("Comment").Preload("Category").Offset(offset).Limit(pageSize).Find(&complaint)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
@@ -112,7 +112,7 @@ func (r *ComplaintRepositoryImpl) Update(complaint *domain.Complaint, id string)
 	return complaint, nil
 }
 
-func (r *ComplaintRepositoryImpl) Delete(complaint *domain.Complaint, id string) ( error) {
+func (r *ComplaintRepositoryImpl) Delete(complaint *domain.Complaint, id string) error {
 	complaintDb := req.ComplaintDomaintoComplaintSchema(*complaint)
 
 	result := r.DB.Where("id", id).Delete(&complaintDb)
