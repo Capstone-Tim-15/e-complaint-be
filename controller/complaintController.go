@@ -23,6 +23,8 @@ type ComplaintController interface {
 	CreateComplaintController(ctx echo.Context) error
 	GetComplaintController(ctx echo.Context) error
 	GetComplaintsController(ctx echo.Context) error
+	UpdateComplaintController(ctx echo.Context) error
+	DeleteComplaintController(ctx echo.Context) error
 }
 
 type ComplaintControllerImpl struct {
@@ -94,20 +96,43 @@ func (c *ComplaintControllerImpl) CreateComplaintController(ctx echo.Context) er
 
 func (c *ComplaintControllerImpl) GetComplaintController(ctx echo.Context) error {
 	idQuery := ctx.QueryParam("id")
+	statusQuery := ctx.QueryParam("status")
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+	pageSize := 10
 
-	result, err := c.ComplaintService.FindById(ctx, idQuery)
-	if err != nil {
-		if strings.Contains(err.Error(), "complaint not found") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
+	if statusQuery == "" {
+		result, err := c.ComplaintService.FindById(ctx, idQuery)
+		if err != nil {
+			if strings.Contains(err.Error(), "complaint not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
+			}
+
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Complaint By ID Error"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Complaint By ID Error"))
+		response := res.FindComplaintDomaintoComplaintResponse(result)
+
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Complaint By Id", response))
 	}
 
-	response := res.FindComplaintDomaintoComplaintResponse(result)
+	if idQuery == "" {
+		result, totalCount, err := c.ComplaintService.FindByStatus(ctx, statusQuery, page, pageSize)
+		if err != nil {
+			if strings.Contains(err.Error(), "complaint not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
+			}
 
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Complaint By Id", response))
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Complaint By Status Error"))
+		}
 
+		response := res.FindStatusComplaintDomaintoComplaintResponse(result)
+
+		return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint By Status", page, pageSize, totalCount, response))
+	}
+	return nil
 }
 
 func (c *ComplaintControllerImpl) GetComplaintsController(ctx echo.Context) error {
@@ -130,4 +155,50 @@ func (c *ComplaintControllerImpl) GetComplaintsController(ctx echo.Context) erro
 	response := res.ConvertComplaintResponse(result)
 
 	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint Data", page, pageSize, totalCount, response))
+}
+
+func (c *ComplaintControllerImpl) UpdateComplaintController(ctx echo.Context) error {
+	complaintUpdateRequest := web.ComplaintUpdateRequest{}
+	err := ctx.Bind(&complaintUpdateRequest)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
+	}
+
+	complaint_id := ctx.QueryParam("complaint_id")
+
+	result, err := c.ComplaintService.UpdateComplaint(ctx, complaint_id, complaintUpdateRequest)
+	if err != nil {
+		if strings.Contains(err.Error(), "complaint not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
+		}
+
+		if strings.Contains(err.Error(), "error when updating complaint") {
+			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Update Complaint Error"))
+		}
+
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update Complaint Error"))
+	}
+
+	response := res.ComplaintDomaintoComplaintResponse(result)
+
+	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Update Complaint", response))
+}
+
+func (c *ComplaintControllerImpl) DeleteComplaintController(ctx echo.Context) error {
+	complaint_id := ctx.QueryParam("complaint_id")
+
+	err := c.ComplaintService.DeleteComplaint(ctx, complaint_id)
+	if err != nil {
+		if strings.Contains(err.Error(), "complaint not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
+		}
+
+		if strings.Contains(err.Error(), "error when deleting complaint") {
+			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Delete Complaint Error"))
+		}
+
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Delete Complaint Error"))
+	}
+
+	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Delete Complaint", nil))
 }
