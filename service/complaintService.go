@@ -15,7 +15,7 @@ import (
 type ComplaintService interface {
 	CreateComplaint(ctx echo.Context, request web.ComplaintCreateRequest) (*domain.Complaint, error)
 	FindById(ctx echo.Context, id string) (*domain.Complaint, error)
-	FindByStatus(ctx echo.Context, status string, page, pageSize int) ([]domain.Complaint, error)
+	FindByStatus(ctx echo.Context, status string, page, pageSize int) ([]domain.Complaint, int64, error)
 	FindAll(ctx echo.Context, page, pageSize int) ([]domain.Complaint, int64, error)
 	UpdateComplaint(ctx echo.Context, id string, request web.ComplaintUpdateRequest) (*domain.Complaint, error)
 	DeleteComplaint(ctx echo.Context, id string) error
@@ -62,17 +62,17 @@ func (s ComplaintServiceImpl) FindById(ctx echo.Context, id string) (*domain.Com
 	return complaint, nil
 }
 
-func (s ComplaintServiceImpl) FindByStatus(ctx echo.Context, status string, page, pageSize int) ([]domain.Complaint, error) {
-	complaints, err := s.ComplaintRepository.FindByStatus(status, page, pageSize)
+func (s ComplaintServiceImpl) FindByStatus(ctx echo.Context, status string, page, pageSize int) ([]domain.Complaint, int64, error) {
+	complaints, totalCount, err := s.ComplaintRepository.FindByStatus(status, page, pageSize)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	if complaints == nil {
-		return nil, fmt.Errorf("complaints not found")
+		return nil, 0, fmt.Errorf("complaints not found")
 	}
 
-	return complaints, nil
+	return complaints, totalCount, nil
 }
 
 func (s *ComplaintServiceImpl) FindAll(ctx echo.Context, page, pageSize int) ([]domain.Complaint, int64, error) {

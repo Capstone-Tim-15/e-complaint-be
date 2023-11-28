@@ -119,7 +119,7 @@ func (c *ComplaintControllerImpl) GetComplaintController(ctx echo.Context) error
 	}
 
 	if idQuery == "" {
-		result, err := c.ComplaintService.FindByStatus(ctx, statusQuery, page, pageSize)
+		result, totalCount, err := c.ComplaintService.FindByStatus(ctx, statusQuery, page, pageSize)
 		if err != nil {
 			if strings.Contains(err.Error(), "complaint not found") {
 				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
@@ -130,7 +130,7 @@ func (c *ComplaintControllerImpl) GetComplaintController(ctx echo.Context) error
 
 		response := res.FindStatusComplaintDomaintoComplaintResponse(result)
 
-		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Complaint By Status", response))
+		return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint By Status", page, pageSize, totalCount, response))
 	}
 	return nil
 }
