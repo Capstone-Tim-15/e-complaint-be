@@ -27,6 +27,7 @@ func main() {
 	routes.CommentRoutes(app, DB, validate)
 	routes.AIRoutes(app, AI)
 
+
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
 	app.Use(middleware.LoggerWithConfig(
