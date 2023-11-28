@@ -1,33 +1,220 @@
 package controller
 
 import (
-	"ecomplaint/model/web"
+	"bytes"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
 
-var (
-	upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-	broadcasts   = make(map[string]*Broadcast)
-	broadcastsMu sync.Mutex
+const (
+	writeWait      = 10 * time.Second
+	pongWait       = 60 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
+	maxMessageSize = 512
 )
 
-type Broadcast struct {
-	ID       string
-	Clients  map[*websocket.Conn]bool
-	Username string
+var (
+	newline  = []byte{'\n'}
+	space    = []byte{' '}
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+)
+
+type Client struct {
+	hub  *Hub
+	conn *websocket.Conn
+	send chan []byte
+	room string
+}
+
+type Hub struct {
+	rooms      map[string]*Room
+	broadcast  chan *Message
+	register   chan *Client
+	unregister chan *Client
+	mu         sync.Mutex
+}
+
+type Room struct {
+	clients    map[*Client]bool
+	broadcast  chan *Message
+	register   chan *Client
+	unregister chan *Client
+}
+
+type Message struct {
+	client *Client
+	data   []byte
+}
+
+func newHub() *Hub {
+	return &Hub{
+		rooms:      make(map[string]*Room),
+		broadcast:  make(chan *Message),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+	}
+}
+
+func (h *Hub) run() {
+	for {
+		select {
+		case client := <-h.register:
+			h.mu.Lock()
+			room, ok := h.rooms[client.room]
+			if !ok {
+				room = newRoom()
+				h.rooms[client.room] = room
+				go room.run()
+			}
+			h.mu.Unlock()
+
+			room.register <- client
+
+		case client := <-h.unregister:
+			h.mu.Lock()
+			if room, ok := h.rooms[client.room]; ok {
+				room.unregister <- client
+				if len(room.clients) == 0 {
+					delete(h.rooms, client.room)
+				}
+			}
+			h.mu.Unlock()
+
+		case message := <-h.broadcast:
+			h.mu.Lock()
+			if room, ok := h.rooms[message.client.room]; ok {
+				room.broadcast <- message
+			}
+			h.mu.Unlock()
+		}
+	}
+}
+
+func newRoom() *Room {
+	return &Room{
+		clients:    make(map[*Client]bool),
+		broadcast:  make(chan *Message),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+	}
+}
+
+func (r *Room) run() {
+	for {
+		select {
+		case client := <-r.register:
+			r.clients[client] = true
+		case client := <-r.unregister:
+			if _, ok := r.clients[client]; ok {
+				delete(r.clients, client)
+				close(client.send)
+			}
+		case message := <-r.broadcast:
+			for client := range r.clients {
+				select {
+				case client.send <- message.data:
+				default:
+					close(client.send)
+					delete(r.clients, client)
+				}
+			}
+		}
+	}
+}
+
+func (c *Client) readPump() {
+	defer func() {
+		c.hub.unregister <- c
+		c.conn.Close()
+	}()
+	c.conn.SetReadLimit(maxMessageSize)
+	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	for {
+		_, message, err := c.conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("Error: %v", err)
+			}
+			break
+		}
+		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		c.hub.broadcast <- &Message{client: c, data: message}
+	}
+}
+
+func (c *Client) writePump() {
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		c.conn.Close()
+	}()
+
+	for {
+		select {
+		case message, ok := <-c.send:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			w, err := c.conn.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return
+			}
+
+			w.Write(message)
+
+			n := len(c.send)
+			for i := 0; i < n; i++ {
+				w.Write(newline)
+				w.Write(<-c.send)
+			}
+
+			if err := w.Close(); err != nil {
+				return
+			}
+
+		case <-ticker.C:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
+	}
+}
+
+func serveWs(hub *Hub, c echo.Context, room, userName string) error {
+	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+	if err != nil {
+		log.Println("WebSocket Upgrade Error:", err)
+		return err
+	}
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), room: room}
+	client.hub.register <- client
+
+	go client.writePump()
+	go client.readPump()
+
+	message := []byte(userName + " has joined the room.")
+	hub.broadcast <- &Message{client: client, data: message}
+
+	log.Println(userName, "connected to room:", room)
+
+	return nil
 }
 
 type ChatController interface {
@@ -45,142 +232,18 @@ func NewChatController(UserService service.UserService) *ChatControllerImpl {
 func (c *ChatControllerImpl) HandleWebsocket(ctx echo.Context) error {
 	id := ctx.Param("id")
 
-	conn, err := upgrader.Upgrade(ctx.Response(), ctx.Request(), nil)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	result, err := c.UserService.FindById(ctx, id)
+	user, err := c.UserService.FindById(ctx, id)
 	if err != nil {
 		if strings.Contains(err.Error(), "users not found") {
-			return conn.WriteJSON(helper.ErrorResponse("Users Not Found"))
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("User Not Found"))
 		}
-		return conn.WriteJSON(helper.ErrorResponse("Get User Data By Id Error"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get User Data By Id Error"))
 	}
 
-	broadcastID := result.ID
-	joinBroadcast(conn, broadcastID, result.Username)
+	chatHub := newHub()
+	go chatHub.run()
 
-	go onConnect(conn, broadcastID, result.Username)
-	go onMessage(conn, broadcastID, result.Username)
-	go onClose(conn, broadcastID)
-	go receiveMessages(conn, broadcastID)
+	room := "room_" + id
 
-	return nil
-}
-
-func createBroadcast(id, username string) {
-	broadcast := &Broadcast{
-		ID:       id,
-		Clients:  make(map[*websocket.Conn]bool),
-		Username: username,
-	}
-	broadcasts[id] = broadcast
-}
-
-func joinBroadcast(conn *websocket.Conn, id, username string) {
-	broadcastsMu.Lock()
-	defer broadcastsMu.Unlock()
-
-	broadcast, ok := broadcasts[id]
-	if !ok {
-		createBroadcast(id, username)
-		broadcast = broadcasts[id]
-	}
-
-	broadcast.Clients[conn] = true
-}
-
-func onConnect(conn *websocket.Conn, id, username string) {
-	conn.WriteJSON(map[string]string{
-		"message": fmt.Sprintf("Welcome, %s, to %s broadcast", username, id),
-	})
-}
-
-func onMessage(conn *websocket.Conn, id, username string) {
-	for {
-		var msg web.Message
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-
-		sendMessage(conn, id, username, msg)
-	}
-}
-
-func onClose(conn *websocket.Conn, id string) {
-	broadcastsMu.Lock()
-	defer broadcastsMu.Unlock()
-
-	leaveBroadcast(conn, id)
-	conn.Close()
-}
-
-func sendMessage(conn *websocket.Conn, id, username string, msg web.Message) {
-	broadcastsMu.Lock()
-	defer broadcastsMu.Unlock()
-
-	broadcast, ok := broadcasts[id]
-	if !ok {
-		return
-	}
-
-	for client := range broadcast.Clients {
-		if client != conn {
-			msg.Username = username
-			err := client.WriteJSON(msg)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-		}
-	}
-}
-
-func receiveMessages(conn *websocket.Conn, id string) {
-	for {
-		var msg web.Message
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-
-		handleReceivedMessage(id, msg)
-	}
-}
-
-func handleReceivedMessage(broadcastID string, receivedMsg web.Message) {
-	broadcastsMu.Lock()
-	defer broadcastsMu.Unlock()
-
-	broadcast, ok := broadcasts[broadcastID]
-	if !ok {
-		return
-	}
-
-	for client := range broadcast.Clients {
-		err := client.WriteJSON(receivedMsg)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-	}
-
-	fmt.Printf("Received message from %s\n", receivedMsg.Content)
-}
-
-func leaveBroadcast(conn *websocket.Conn, id string) {
-	broadcastsMu.Lock()
-	defer broadcastsMu.Unlock()
-
-	broadcast, ok := broadcasts[id]
-	if !ok {
-		return
-	}
-
-	delete(broadcast.Clients, conn)
+	return serveWs(chatHub, ctx, room, user.Name)
 }
