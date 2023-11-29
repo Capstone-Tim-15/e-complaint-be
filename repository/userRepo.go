@@ -98,7 +98,7 @@ func (r *UserRepositoryImpl) FindAll(page, pageSize int) ([]domain.User, int64, 
 		return nil, 0, resultCount.Error
 	}
 
-	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&users)
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Order("created_at desc").Find(&users)
 	if resultData.Error != nil {
 		return nil, 0, resultData.Error
 	}

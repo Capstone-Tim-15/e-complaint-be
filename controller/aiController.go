@@ -30,7 +30,7 @@ func (c *AIControllerImpl) AIRecomController(ctx echo.Context) error {
 	}
 
 	if aiCreateRequest.Message == "" {
-		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Complaint message cannot be empty"))
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Complaint Message Cannot Be Empty"))
 	}
 
 	result, err := c.AIService.ResolveComplaint(ctx, aiCreateRequest.Message)
