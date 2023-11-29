@@ -7,6 +7,7 @@ import (
 	res "ecomplaint/utils/response"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -28,27 +29,40 @@ func NewNewsController(newsService service.NewsService) NewsController {
 
 func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 	newsID := ctx.QueryParam("id")
-
-	result, err := c.NewsService.FindById(ctx, newsID)
-	if err != nil {
-		if strings.Contains(err.Error(), "news not found") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
+	newsTitle := ctx.QueryParam("title")
+	if newsID != "" {
+		result, err := c.NewsService.FindById(ctx, newsID)
+		if err != nil {
+			if strings.Contains(err.Error(), "news not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
+			}
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get News Error"))
 		}
-
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get News Error"))
+		response := res.NewsDomainToNewsResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get News Data", response))
+	} else if newsTitle != "" {
+		result, err := c.NewsService.FindByTitle(ctx, newsTitle)
+		if err != nil {
+			if strings.Contains(err.Error(), "news not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
+			}
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get News Error"))
+		}
+		response := res.ConvertNewsResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get News Data", response))
+	} else {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Query Param Input"))
 	}
 
-	if result == nil {
-		return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News not found"))
-	}
-
-	response := res.NewsDomainToNewsResponse(result)
-
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get News Data", response))
 }
 
 func (c *NewsControllerImpl) GetAllNewsController(ctx echo.Context) error {
-	result, err := c.NewsService.FindByAll(ctx)
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+	pageSize := 10
+	result, totalCount, err := c.NewsService.FindByAll(ctx, page, pageSize)
 	if err != nil {
 		if strings.Contains(err.Error(), "news not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
@@ -58,7 +72,7 @@ func (c *NewsControllerImpl) GetAllNewsController(ctx echo.Context) error {
 
 	response := res.ConvertNewsResponse(result)
 
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All News Data", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get All News Data", page, pageSize, totalCount, response))
 }
 
 func (c *NewsControllerImpl) CreateNewsController(ctx echo.Context) error {
