@@ -63,7 +63,5 @@ jobs:
               -e SMTP_USERNAME=${{secrets.SMTP_USERNAME}} \
               -e SMTP_PASSWORD=${{secrets.SMTP_PASSWORD}} \
               -e SENDER_EMAIL=${{secrets.SENDER_EMAIL}} \
-              -e CLOUDINARY_NAME=${{secrets.CLOUDINARY_NAME}} \
-              -e CLOUDINARY_API_KEY=${{secrets.CLOUDINARY_API_KEY}} \
-              -e CLOUDINARY_API_SECRET=${{secrets.CLOUDINARY_API_SECRET}} \
+              -e CLOUDINARY_URL=${{secrets.CLOUDINARY_URL}} \
               ${{ secrets.DOCKERHUB_USERNAME }}/complain
