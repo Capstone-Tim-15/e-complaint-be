@@ -13,6 +13,7 @@ type CategoryRepository interface {
 	FindById(id string) (*domain.Category, error)
 	FindAll() ([]domain.Category, error)
 	Update(cat *domain.Category, id string) (*domain.Category, error)
+	Pagination(offset int, limit int) ([]domain.Category, int64, error)
 }
 
 type CategoryRepositoryImpl struct {

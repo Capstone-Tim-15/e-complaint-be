@@ -41,3 +41,43 @@ func ErrorResponse(message string) interface{} {
 		},
 	}
 }
+
+type TPSuccessResponse struct {
+	Meta       TResponseMeta `json:"meta"`
+	Results    interface{}   `json:"results"`
+	Pagination interface{}   `json:"pagination"`
+}
+
+type TPagination struct {
+	Offset int   `json:"offset"`
+	Limit  int   `json:"limit"`
+	Total  int64 `json:"total"`
+}
+
+func Pagination(offset int, limit int, total int64) TPagination {
+	return TPagination{
+		Offset: offset,
+		Limit:  limit,
+		Total:  total,
+	}
+}
+
+func PaginationResponse(message string, data interface{}, pagination interface{}) interface{} {
+	if data == nil {
+		return TErrorResponse{
+			Meta: TResponseMeta{
+				Success: true,
+				Message: message,
+			},
+		}
+	} else {
+		return TPSuccessResponse{
+			Meta: TResponseMeta{
+				Success: true,
+				Message: message,
+			},
+			Results:    data,
+			Pagination: pagination,
+		}
+	}
+}

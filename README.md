@@ -49,7 +49,7 @@ Berikut adalah daftar variabel lingkungan yang diperlukan dalam file `.env`:
 - Duplikat file `.env.example` sebagai `.env` dan membuatnya secara otomatis apabila belum tersedia
 
 ```bash
-cp -n .env.example .env
+cp -n .env .env
 ```
 - Isi nilai variabel lingkungan pada `.env` dengan lingkungan yg anda miliki
 

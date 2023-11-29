@@ -13,6 +13,7 @@ type CategoryController interface {
 	CreateCategoryController(ctx echo.Context) error
 	FindController(ctx echo.Context) error
 	UpdateCategoryController(ctx echo.Context) error
+	Pagination(ctx echo.Context) error
 }
 
 type CategoryControllerImpl struct {

@@ -18,6 +18,5 @@ func ValidationError(ctx echo.Context, err error) error {
 
 		return fmt.Errorf("validation failed: %s", strings.Join(messages, "; "))
 	}
-
 	return nil
 }

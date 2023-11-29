@@ -15,6 +15,7 @@ type CategoryService interface {
 	FindById(ctx echo.Context, id string) (*domain.Category, error)
 	FindAll(ctx echo.Context) ([]domain.Category, error)
 	UpdateCategory(ctx echo.Context, request web.CategoryRequest, id string) (*domain.Category, error)
+	Pagination(offset int, limit int) ([]domain.Category, *web.Pagination, error)
 }
 
 type CategoryServiceImpl struct {
