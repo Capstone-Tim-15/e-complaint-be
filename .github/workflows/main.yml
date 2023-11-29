@@ -1,8 +1,8 @@
-name: Docker Image CI
+name: Debug
 
 on:
   push:
-    branches: "release"
+    branches: "debugging"
 
 jobs:
   build:
@@ -37,7 +37,7 @@ jobs:
         name: connect ssh
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: 22
