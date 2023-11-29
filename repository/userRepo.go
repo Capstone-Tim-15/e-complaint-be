@@ -14,10 +14,12 @@ type UserRepository interface {
 	Create(user *domain.User) (*domain.User, error)
 	FindById(id string) (*domain.User, error)
 	FindByEmail(email string) (*domain.User, error)
-	FindAll() ([]domain.User, error)
+	FindByUsername(username string) (*domain.User, error)
+	FindAll(page, pageSize int) ([]domain.User, int64, error)
 	FindByName(name string) (*domain.User, error)
 	Update(user *domain.User, id string) (*domain.User, error)
-	ResetPassword(user *domain.User, email string) (*domain.User, error)
+	ResetPassword(user *domain.User, id string) (*domain.User, error)
+	PhotoProfile(user *domain.User, id string) (*domain.User, error)
 	Delete(id string) error
 }
 
@@ -74,15 +76,34 @@ func (r *UserRepositoryImpl) FindByEmail(email string) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) FindAll() ([]domain.User, error) {
-	user := []domain.User{}
+func (r *UserRepositoryImpl) FindByUsername(username string) (*domain.User, error) {
+	user := domain.User{}
 
-	result := r.DB.Where("deleted_at IS NULL").Find(&user)
+	result := r.DB.Where("username = ?", username).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return user, nil
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) FindAll(page, pageSize int) ([]domain.User, int64, error) {
+	offset := (page - 1) * pageSize
+
+	users := []domain.User{}
+	var totalCount int64
+
+	resultCount := r.DB.Model(&domain.User{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
+	}
+
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&users)
+	if resultData.Error != nil {
+		return nil, 0, resultData.Error
+	}
+
+	return users, totalCount, nil
 }
 
 func (r *UserRepositoryImpl) FindByName(name string) (*domain.User, error) {
@@ -111,10 +132,23 @@ func (r *UserRepositoryImpl) Update(user *domain.User, id string) (*domain.User,
 	return user, nil
 }
 
-func (r *UserRepositoryImpl) ResetPassword(user *domain.User, email string) (*domain.User, error) {
+func (r *UserRepositoryImpl) ResetPassword(user *domain.User, id string) (*domain.User, error) {
 	userDb := req.UserDomaintoUserSchema(*user)
 
-	result := r.DB.Table("users").Where("email = ?", email).Updates(userDb)
+	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	user = res.UserSchemaToUserDomain(userDb)
+
+	return user, nil
+}
+
+func (r *UserRepositoryImpl) PhotoProfile(user *domain.User, id string) (*domain.User, error) {
+	userDb := req.UserDomaintoUserSchema(*user)
+
+	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}

@@ -29,5 +29,6 @@ func AdminRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	adminsGroup.GET("", adminController.GetAdminsController)
 	adminsGroup.PUT("/:id", adminController.UpdateAdminController)
 	adminsGroup.PUT("/reset-password", adminController.ResetPasswordController)
+	adminsGroup.PUT("/photo-profile", adminController.UpdatePhotoProfileController)
 	adminsGroup.DELETE("/:id", adminController.DeleteAdminController)
 }
