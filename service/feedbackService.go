@@ -16,7 +16,8 @@ type FeedbackService interface {
 	UpdateFeedback(ctx echo.Context, request web.FeedbackUpdateRequest, id string) (*domain.Feedback, error)
 	DeleteFeedback(ctx echo.Context, id string) error
 	FindById(ctx echo.Context, id string) (*domain.Feedback, error)
-	FindByAll(ctx echo.Context) ([]domain.Feedback, error)
+	FindByAll(ctx echo.Context, page, pageSize int) ([]domain.Feedback, int64, error)
+	FindByNewsId(ctx echo.Context, newsID string, page, pageSize int) ([]domain.Feedback, int64, error)
 }
 
 type FeedbackServiceImp struct {
@@ -87,10 +88,18 @@ func (fs *FeedbackServiceImp) FindById(ctx echo.Context, id string) (*domain.Fee
 	return existingFeedback, nil
 }
 
-func (fs *FeedbackServiceImp) FindByAll(ctx echo.Context) ([]domain.Feedback, error) {
-	feedback, err := fs.FeedbackRepository.FindByAll()
+func (fs *FeedbackServiceImp) FindByAll(ctx echo.Context, page, pageSize int) ([]domain.Feedback, int64, error) {
+	feedback, totalCount, err := fs.FeedbackRepository.FindByAll(page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("feedback not found")
+		return nil, 0, fmt.Errorf("feedback not found")
 	}
-	return feedback, nil
+	return feedback, totalCount, nil
+}
+
+func (fs *FeedbackServiceImp) FindByNewsId(ctx echo.Context, newsID string, page, pageSize int) ([]domain.Feedback, int64, error) {
+	feedback, totalCount, err := fs.FeedbackRepository.FindByNewsId(newsID, page, pageSize)
+	if err != nil {
+		return nil, 0, fmt.Errorf("feedback not found")
+	}
+	return feedback, totalCount, nil
 }

@@ -5,8 +5,10 @@ import (
 	"ecomplaint/repository"
 	"ecomplaint/service"
 	"github.com/go-playground/validator"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+	"os"
 )
 
 func NewsRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
@@ -15,11 +17,16 @@ func NewsRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	newsController := controller.NewNewsController(newsService)
 
 	newsGroup := e.Group("users/news")
-
-	newsGroup.POST("", newsController.CreateNewsController)
+	newsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 	newsGroup.GET("/search", newsController.GetNewsController)
 	newsGroup.GET("", newsController.GetAllNewsController)
-	newsGroup.PUT("/:id", newsController.UpdateNewsController)
-	newsGroup.DELETE("/:id", newsController.DeleteNewsController)
+
+	adminNewsGroup := e.Group("admin/news")
+	adminNewsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
+	adminNewsGroup.POST("", newsController.CreateNewsController)
+	adminNewsGroup.GET("/search", newsController.GetNewsController)
+	adminNewsGroup.GET("", newsController.GetAllNewsController)
+	adminNewsGroup.PUT("/:id", newsController.UpdateNewsController)
+	adminNewsGroup.DELETE("/:id", newsController.DeleteNewsController)
 
 }

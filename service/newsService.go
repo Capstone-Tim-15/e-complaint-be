@@ -17,7 +17,7 @@ type NewsService interface {
 	DeleteNews(ctx echo.Context, id string) error
 	FindById(ctx echo.Context, id string) (*domain.News, error)
 	FindByAll(ctx echo.Context, page, pageSize int) ([]domain.News, int64, error)
-	FindByTitle(ctx echo.Context, title string) ([]domain.News, error)
+	FindByTitle(ctx echo.Context, title string, page, pageSize int) ([]domain.News, int64, error)
 }
 
 type NewsServiceImp struct {
@@ -97,10 +97,10 @@ func (ns *NewsServiceImp) FindByAll(ctx echo.Context, page, pageSize int) ([]dom
 	return news, totalCount, nil
 }
 
-func (ns *NewsServiceImp) FindByTitle(ctx echo.Context, title string) ([]domain.News, error) {
-	news, err := ns.NewsRepository.FindByTitle(title)
+func (ns *NewsServiceImp) FindByTitle(ctx echo.Context, title string, page, pageSize int) ([]domain.News, int64, error) {
+	news, totalCount, err := ns.NewsRepository.FindByTitle(title, page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("title not found")
+		return nil, 0, fmt.Errorf("title not found")
 	}
-	return news, nil
+	return news, totalCount, nil
 }

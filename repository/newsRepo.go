@@ -15,7 +15,7 @@ type NewsRepository interface {
 	Delete(id string) error
 	FindById(id string) (*domain.News, error)
 	FindByAll(page, pageSize int) ([]domain.News, int64, error)
-	FindByTitle(title string) ([]domain.News, error)
+	FindByTitle(title string, page, pageSize int) ([]domain.News, int64, error)
 }
 
 type NewsRepositoryImpl struct {
@@ -86,18 +86,24 @@ func (repository *NewsRepositoryImpl) FindByAll(page, pageSize int) ([]domain.Ne
 		return nil, 0, resultCount.Error
 	}
 
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Feedback").Preload("Likes").Offset(offset).Limit(pageSize).Find(&news)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Feedback").Preload("Likes").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
 	return news, totalCount, nil
 }
 
-func (repository *NewsRepositoryImpl) FindByTitle(title string) ([]domain.News, error) {
+func (repository *NewsRepositoryImpl) FindByTitle(title string, page, pageSize int) ([]domain.News, int64, error) {
+	offset := (page - 1) * pageSize
 	news := []domain.News{}
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Feedback").Preload("Likes").Find(&news, "title LIKE  ?", title+"%")
-	if result.Error != nil {
-		return nil, result.Error
+	var totalCount int64
+	resultCount := repository.DB.Model(&domain.News{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
 	}
-	return news, nil
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Feedback").Preload("Likes").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news, "title LIKE  ?", title+"%")
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+	return news, totalCount, nil
 }

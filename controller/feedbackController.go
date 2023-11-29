@@ -7,6 +7,7 @@ import (
 	res "ecomplaint/utils/response"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -28,22 +29,41 @@ func NewFeedbackController(feedbackService service.FeedbackService) FeedbackCont
 
 func (c *FeedbackControllerImpl) GetFeedbackController(ctx echo.Context) error {
 	feedbackID := ctx.QueryParam("id")
-	result, err := c.FeedbackService.FindById(ctx, feedbackID)
+	feedbackNewsId := ctx.QueryParam("news_id")
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
 	if err != nil {
+		page = 1
+	}
+	pageSize := 10
+	if feedbackID != "" {
+		result, err := c.FeedbackService.FindById(ctx, feedbackID)
 		if strings.Contains(err.Error(), "feedback not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
 		}
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Feedback Error"))
+		response := res.FeedbackDomainToFeedbackResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Feedback Data", response))
+	} else if feedbackNewsId != "" {
+		result, totalCount, err := c.FeedbackService.FindByNewsId(ctx, feedbackNewsId, page, pageSize)
+		if err != nil {
+			if strings.Contains(err.Error(), "feedback not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
+			}
+		}
+
+		response := res.ConvertFeedbackResponse(result)
+		return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Feedback By news_id", page, pageSize, totalCount, response))
+	} else {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Query Param Input"))
 	}
-	if result == nil {
-		return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback not found"))
-	}
-	response := res.FeedbackDomainToFeedbackResponse(result)
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Feedback Data", response))
 }
 
 func (c *FeedbackControllerImpl) GetAllFeedbackController(ctx echo.Context) error {
-	result, err := c.FeedbackService.FindByAll(ctx)
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize := 10
+	result, totalCount, err := c.FeedbackService.FindByAll(ctx, page, pageSize)
 	if err != nil {
 		if strings.Contains(err.Error(), "feedback not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
@@ -51,7 +71,7 @@ func (c *FeedbackControllerImpl) GetAllFeedbackController(ctx echo.Context) erro
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get All Feedback Data Error"))
 	}
 	response := res.ConvertFeedbackResponse(result)
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get All Feedback Data", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get All Feedback Data", page, pageSize, totalCount, response))
 }
 
 func (c *FeedbackControllerImpl) CreateFeedbackController(ctx echo.Context) error {

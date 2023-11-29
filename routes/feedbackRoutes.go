@@ -16,12 +16,18 @@ func FeedbackRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	feedbackService := service.NewFeedbackService(feedbackRepository, validate)
 	feedbackController := controller.NewFeedbackController(feedbackService)
 
-	feedbackGroup := e.Group("feedback")
+	feedbackGroup := e.Group("/users/news/feedback")
 	feedbackGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
-	feedbackGroup.POST("", feedbackController.CreateFeedbackController)
 	feedbackGroup.GET("/search", feedbackController.GetFeedbackController)
 	feedbackGroup.GET("", feedbackController.GetAllFeedbackController)
-	feedbackGroup.PUT("/:id", feedbackController.UpdateFeedbackController)
-	feedbackGroup.DELETE("/:id", feedbackController.DeleteFeedbackController)
+
+	adminFeedbackGroup := e.Group("/admin/news/feedback")
+	adminFeedbackGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
+
+	adminFeedbackGroup.POST("", feedbackController.CreateFeedbackController)
+	adminFeedbackGroup.GET("/search", feedbackController.GetFeedbackController)
+	adminFeedbackGroup.GET("", feedbackController.GetAllFeedbackController)
+	adminFeedbackGroup.PUT("/:id", feedbackController.UpdateFeedbackController)
+	adminFeedbackGroup.DELETE("/:id", feedbackController.DeleteFeedbackController)
 
 }

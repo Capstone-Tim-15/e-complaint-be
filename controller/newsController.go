@@ -30,6 +30,12 @@ func NewNewsController(newsService service.NewsService) NewsController {
 func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 	newsID := ctx.QueryParam("id")
 	newsTitle := ctx.QueryParam("title")
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize := 10
+
 	if newsID != "" {
 		result, err := c.NewsService.FindById(ctx, newsID)
 		if err != nil {
@@ -41,7 +47,7 @@ func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 		response := res.NewsDomainToNewsResponse(result)
 		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get News Data", response))
 	} else if newsTitle != "" {
-		result, err := c.NewsService.FindByTitle(ctx, newsTitle)
+		result, totalCount, err := c.NewsService.FindByTitle(ctx, newsTitle, page, pageSize)
 		if err != nil {
 			if strings.Contains(err.Error(), "news not found") {
 				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("News Not Found"))
@@ -49,7 +55,7 @@ func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get News Error"))
 		}
 		response := res.ConvertNewsResponse(result)
-		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get News Data", response))
+		return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get News By Title", page, pageSize, totalCount, response))
 	} else {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Query Param Input"))
 	}
