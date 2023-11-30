@@ -54,7 +54,7 @@ func (r *ComplaintRepositoryImpl) Create(complaint *domain.Complaint) (*domain.C
 func (r *ComplaintRepositoryImpl) FindById(id string) (*domain.Complaint, error) {
 	complaint := domain.Complaint{}
 
-	result := r.DB.Where("id = ?", id).Preload("Comment").Preload("Category").First(&complaint)
+	result := r.DB.Where("id = ?", id).Preload("Comment", func(DB *gorm.DB) *gorm.DB{return DB.Order("created_at DESC")}).Preload("Category").First(&complaint)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -67,8 +67,8 @@ func (r *ComplaintRepositoryImpl) FindByStatus(status string, page, pageSize int
 	complaint := []domain.Complaint{}
 	var totalCount int64
 
-	resultCount := r.DB.Where("status = ?", status).Where("deleted_at IS NULL").Count(&totalCount)
-	if resultCount.Error != nil {
+	resultCount := r.DB.Model(&domain.Complaint{}).Where("status = ?", status).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil{
 		return nil, 0, resultCount.Error
 	}
 
@@ -103,7 +103,7 @@ func (r *ComplaintRepositoryImpl) FindAll(page, pageSize int) ([]domain.Complain
 func (r *ComplaintRepositoryImpl) Update(complaint *domain.Complaint, id string) (*domain.Complaint, error) {
 	complaintDb := req.ComplaintDomaintoComplaintSchema(*complaint)
 
-	result := r.DB.Model(&complaintDb).Where("id", id).Updates(complaintDb)
+	result := r.DB.Debug().Table("complaints").Where("id", id).Updates(complaintDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}

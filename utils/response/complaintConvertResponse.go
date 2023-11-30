@@ -47,6 +47,7 @@ func FindComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.Com
 		commentResponse := web.CommentResponse{
 			ID:           comment.ID,
 			Complaint_ID: comment.Complaint_ID,
+			Fullname:     comment.Fullname,
 			Role:         comment.Role,
 			Message:      comment.Message,
 		}
