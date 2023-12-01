@@ -83,7 +83,7 @@ func (repository *FeedbackRepositoryImpl) FindByAll(page, pageSize int) ([]domai
 	if resultCount.Error != nil {
 		return nil, 0, resultCount.Error
 	}
-	result := repository.DB.Where("deleted_at is NULL").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&feedback)
+	result := repository.DB.Where("deleted_at is NULL").Preload("User").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&feedback)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
@@ -98,7 +98,7 @@ func (repository *FeedbackRepositoryImpl) FindByNewsId(newsID string, page, page
 	if resultCount.Error != nil {
 		return nil, 0, resultCount.Error
 	}
-	result := repository.DB.Where("deleted_at is NULL").Where("news_id = ?", newsID).Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&feedback)
+	result := repository.DB.Where("deleted_at is NULL").Preload("User").Where("news_id = ?", newsID).Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&feedback)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
