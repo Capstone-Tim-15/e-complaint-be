@@ -27,6 +27,9 @@ func main() {
 	routes.CommentRoutes(app, DB, validate)
 	routes.AIRoutes(app, AI)
 
+	routes.NewsRoutes(app, DB, validate)
+	routes.LikeRoutes(app, DB, validate)
+	routes.FeedbackRoutes(app, DB, validate)
 
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
