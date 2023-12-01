@@ -4,7 +4,7 @@ import (
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/res"
+	res "ecomplaint/utils/response"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -13,7 +13,6 @@ type CategoryController interface {
 	CreateCategoryController(ctx echo.Context) error
 	FindController(ctx echo.Context) error
 	UpdateCategoryController(ctx echo.Context) error
-	Pagination(ctx echo.Context) error
 }
 
 type CategoryControllerImpl struct {

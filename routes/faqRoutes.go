@@ -5,8 +5,10 @@ import (
 	"ecomplaint/repository"
 	"ecomplaint/service"
 	"github.com/go-playground/validator"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+	"os"
 )
 
 func FAQRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
@@ -15,10 +17,11 @@ func FAQRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	faqService := service.NewFaqService(faqRepository, validate)
 	faqController := controller.NewFaqController(faqService)
 
-	faqsGroup := e.Group("faq")
+	faqsGroup := e.Group("admin/faq")
+	faqsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
-	faqsGroup.POST("/create", faqController.CreateFaqController)
-	faqsGroup.GET("/find/:id", faqController.FindController)
-	faqsGroup.GET("/find", faqController.FindController)
-	faqsGroup.PUT("/update/:id", faqController.UpdateFaqController)
+	faqsGroup.POST("", faqController.CreateFaqController)
+	faqsGroup.GET("/search/:id", faqController.FindController)
+	faqsGroup.GET("/search", faqController.FindController)
+	faqsGroup.PUT("/:id", faqController.UpdateFaqController)
 }

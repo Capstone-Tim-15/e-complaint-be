@@ -4,7 +4,7 @@ import (
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/res"
+	res "ecomplaint/utils/response"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"

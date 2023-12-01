@@ -20,8 +20,6 @@
 
 # Go workspace file
 go.work
-*.mod
-*.sum
 
 # Environment Variable
 .env
@@ -30,8 +28,8 @@ go.work
 temp
 tmp
 
-# Firebase credential
+#Firebase credential
 creadential.json
 
-# Jetbrains Folder
 .idea
+.DS_Store

@@ -5,9 +5,22 @@ type TResponseMeta struct {
 	Message string `json:"message"`
 }
 
+type TResponseMetaPage struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Page    int    `json:"page"`
+	Limit   int    `json:"limit"`
+	Total   int64  `json:"total"`
+}
+
 type TSuccessResponse struct {
 	Meta    TResponseMeta `json:"meta"`
 	Results interface{}   `json:"results"`
+}
+
+type TSuccessResponsePage struct {
+	Meta    TResponseMetaPage `json:"meta"`
+	Results interface{}       `json:"results"`
 }
 
 type TErrorResponse struct {
@@ -33,51 +46,24 @@ func SuccessResponse(message string, data interface{}) interface{} {
 	}
 }
 
+func SuccessResponsePage(message string, page int, limit int, total int64, data interface{}) interface{} {
+	return TSuccessResponsePage{
+		Meta: TResponseMetaPage{
+			Success: true,
+			Message: message,
+			Page:    page,
+			Limit:   limit,
+			Total:   total,
+		},
+		Results: data,
+	}
+}
+
 func ErrorResponse(message string) interface{} {
 	return TErrorResponse{
 		Meta: TResponseMeta{
 			Success: false,
 			Message: message,
 		},
-	}
-}
-
-type TPSuccessResponse struct {
-	Meta       TResponseMeta `json:"meta"`
-	Results    interface{}   `json:"results"`
-	Pagination interface{}   `json:"pagination"`
-}
-
-type TPagination struct {
-	Offset int   `json:"offset"`
-	Limit  int   `json:"limit"`
-	Total  int64 `json:"total"`
-}
-
-func Pagination(offset int, limit int, total int64) TPagination {
-	return TPagination{
-		Offset: offset,
-		Limit:  limit,
-		Total:  total,
-	}
-}
-
-func PaginationResponse(message string, data interface{}, pagination interface{}) interface{} {
-	if data == nil {
-		return TErrorResponse{
-			Meta: TResponseMeta{
-				Success: true,
-				Message: message,
-			},
-		}
-	} else {
-		return TPSuccessResponse{
-			Meta: TResponseMeta{
-				Success: true,
-				Message: message,
-			},
-			Results:    data,
-			Pagination: pagination,
-		}
 	}
 }

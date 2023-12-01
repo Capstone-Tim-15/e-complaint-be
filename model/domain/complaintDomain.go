@@ -3,11 +3,12 @@ package domain
 type Complaint struct {
 	ID          string
 	User_ID     string
+	User        User
 	Category_ID string
-	Admin_ID    string
+	Category    Category
 	Title       string
+	Content     string
 	Status      string
-	Attachment  string
-	URL         string
-	Message     []Message
+	ImageUrl    string
+	Comment     []Comment
 }

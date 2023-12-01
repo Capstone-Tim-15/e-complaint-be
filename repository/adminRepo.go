@@ -4,8 +4,8 @@ import (
 	"ecomplaint/model/domain"
 	"ecomplaint/model/schema"
 	"ecomplaint/utils/helper"
-	"ecomplaint/utils/req"
-	"ecomplaint/utils/res"
+	req "ecomplaint/utils/request"
+	res "ecomplaint/utils/response"
 
 	"gorm.io/gorm"
 )
@@ -14,10 +14,12 @@ type AdminRepository interface {
 	Create(admin *domain.Admin) (*domain.Admin, error)
 	FindById(id string) (*domain.Admin, error)
 	FindByEmail(email string) (*domain.Admin, error)
-	FindAll() ([]domain.Admin, error)
+	FindAll(page, pageSize int) ([]domain.Admin, int64, error)
 	FindByName(name string) (*domain.Admin, error)
+	FindByUsername(username string) (*domain.Admin, error)
 	Update(admin *domain.Admin, id string) (*domain.Admin, error)
-	ResetPassword(admin *domain.Admin, email string) (*domain.Admin, error)
+	ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error)
+	PhotoProfile(admin *domain.Admin, id string) (*domain.Admin, error)
 	Delete(id string) error
 }
 
@@ -29,20 +31,20 @@ func NewAdminRepository(DB *gorm.DB) AdminRepository {
 	return &AdminRepositoryImpl{DB: DB}
 }
 
-func (repository *AdminRepositoryImpl) Create(admin *domain.Admin) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) Create(admin *domain.Admin) (*domain.Admin, error) {
 	var adminDb *schema.Admin
 
 	for {
 		adminDb = req.AdminDomaintoAdminSchema(*admin)
 		adminDb.ID = helper.GenerateRandomString()
 
-		result := repository.DB.First(&admin, adminDb.ID)
+		result := r.DB.First(&admin, adminDb.ID)
 		if result.Error != nil {
 			break
 		}
 	}
 
-	result := repository.DB.Create(&adminDb)
+	result := r.DB.Create(&adminDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -52,10 +54,10 @@ func (repository *AdminRepositoryImpl) Create(admin *domain.Admin) (*domain.Admi
 	return admin, nil
 }
 
-func (repository *AdminRepositoryImpl) FindById(id string) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) FindById(id string) (*domain.Admin, error) {
 	admin := domain.Admin{}
 
-	result := repository.DB.Where("id = ?", id).First(&admin)
+	result := r.DB.Where("id = ?", id).First(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -63,10 +65,10 @@ func (repository *AdminRepositoryImpl) FindById(id string) (*domain.Admin, error
 	return &admin, nil
 }
 
-func (repository *AdminRepositoryImpl) FindByEmail(email string) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) FindByEmail(email string) (*domain.Admin, error) {
 	admin := domain.Admin{}
 
-	result := repository.DB.Where("email = ?", email).First(&admin)
+	result := r.DB.Where("email = ?", email).First(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -74,21 +76,40 @@ func (repository *AdminRepositoryImpl) FindByEmail(email string) (*domain.Admin,
 	return &admin, nil
 }
 
-func (repository *AdminRepositoryImpl) FindAll() ([]domain.Admin, error) {
-	admin := []domain.Admin{}
+func (r *AdminRepositoryImpl) FindByUsername(username string) (*domain.Admin, error) {
+	admin := domain.Admin{}
 
-	result := repository.DB.Where("deleted_at IS NULL").Find(&admin)
+	result := r.DB.Where("username = ?", username).First(&admin)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	return admin, nil
+	return &admin, nil
 }
 
-func (repository *AdminRepositoryImpl) FindByName(name string) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) FindAll(page, pageSize int) ([]domain.Admin, int64, error) {
+	offset := (page - 1) * pageSize
+
+	admins := []domain.Admin{}
+	var totalCount int64
+
+	resultCount := r.DB.Model(&domain.Admin{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
+	}
+
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Order("created_at desc").Find(&admins)
+	if resultData.Error != nil {
+		return nil, 0, resultData.Error
+	}
+
+	return admins, totalCount, nil
+}
+
+func (r *AdminRepositoryImpl) FindByName(name string) (*domain.Admin, error) {
 	author := domain.Admin{}
 
-	result := repository.DB.Where("LOWER(name) LIKE LOWER(?)", "%"+name+"%").First(&author)
+	result := r.DB.Where("LOWER(name) LIKE LOWER(?)", "%"+name+"%").First(&author)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -97,10 +118,10 @@ func (repository *AdminRepositoryImpl) FindByName(name string) (*domain.Admin, e
 	return &author, nil
 }
 
-func (repository *AdminRepositoryImpl) Update(admin *domain.Admin, id string) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) Update(admin *domain.Admin, id string) (*domain.Admin, error) {
 	adminDb := req.AdminDomaintoAdminSchema(*admin)
 
-	result := repository.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
+	result := r.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -110,10 +131,10 @@ func (repository *AdminRepositoryImpl) Update(admin *domain.Admin, id string) (*
 	return admin, nil
 }
 
-func (repository *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, email string) (*domain.Admin, error) {
+func (r *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, id string) (*domain.Admin, error) {
 	adminDb := req.AdminDomaintoAdminSchema(*admin)
 
-	result := repository.DB.Table("admins").Where("email = ?", email).Updates(adminDb)
+	result := r.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -123,8 +144,21 @@ func (repository *AdminRepositoryImpl) ResetPassword(admin *domain.Admin, email 
 	return admin, nil
 }
 
-func (repository *AdminRepositoryImpl) Delete(id string) error {
-	result := repository.DB.Table("admins").Where("id = ?", id).Delete(&schema.Admin{})
+func (r *AdminRepositoryImpl) PhotoProfile(admin *domain.Admin, id string) (*domain.Admin, error) {
+	adminDb := req.AdminDomaintoAdminSchema(*admin)
+
+	result := r.DB.Table("admins").Where("id = ?", id).Updates(adminDb)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	admin = res.AdminSchemaToAdminDomain(adminDb)
+
+	return admin, nil
+}
+
+func (r *AdminRepositoryImpl) Delete(id string) error {
+	result := r.DB.Table("admins").Where("id = ?", id).Delete(&schema.Admin{})
 	if result.Error != nil {
 		return result.Error
 	}
