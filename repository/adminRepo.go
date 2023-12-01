@@ -98,7 +98,7 @@ func (r *AdminRepositoryImpl) FindAll(page, pageSize int) ([]domain.Admin, int64
 		return nil, 0, resultCount.Error
 	}
 
-	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&admins)
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Order("created_at desc").Find(&admins)
 	if resultData.Error != nil {
 		return nil, 0, resultData.Error
 	}

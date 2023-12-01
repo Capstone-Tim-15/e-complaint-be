@@ -5,9 +5,11 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,6 +30,22 @@ func (c *CommentControllerImpl) CreateCommentController(ctx echo.Context) error 
 	err := ctx.Bind(&messRequest)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
+	}
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := claims["id"].(string)
+	fmt.Println("masuk lewat extract id	")
+	userResult, err := c.CommentService.CheckUser(ID)
+	if err == nil {
+		messRequest.Fullname = userResult.Name
+		messRequest.Role = "user"
+	} else {
+		adminResult, err := c.CommentService.CheckAdmin(ID)
+		if err != nil {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Error When Check Sender Account"))
+		}
+		messRequest.Fullname = adminResult.Name
+		messRequest.Role = "admin"
 	}
 
 	result, err := c.CommentService.CreateComment(ctx, messRequest)

@@ -33,6 +33,8 @@ func ComplaintCreateRequestToComplaintDomain(request web.ComplaintCreateRequest)
 func ComplaintUpdateRequestToComplaintDomain(request web.ComplaintUpdateRequest) *domain.Complaint {
 	return &domain.Complaint{
 		Category_ID: request.Category_ID,
+		Title: request.Title,
 		Status:      request.Status,
+		Content: request.Content,
 	}
 }

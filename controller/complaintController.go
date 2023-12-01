@@ -6,7 +6,6 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
-	"fmt"
 	"net/http"
 	"os"
 	"path"
@@ -50,31 +49,31 @@ func (c *ComplaintControllerImpl) CreateComplaintController(ctx echo.Context) er
 
 	fileHeader, err := ctx.FormFile("attachment")
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Missing attachment"))
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Missing Attachment"))
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error opening file"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Opening File"))
 	}
 	defer file.Close()
 
 	cldService, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error initializing Cloudinary"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Initializing Cloudinary"))
 	}
 
 	uploadParams := uploader.UploadParams{}
 	resp, err := cldService.Upload.Upload(context.Background(), file, uploadParams)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error uploading file to Cloudinary"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Uploading File to Cloudinary"))
 	}
-
-	fmt.Println(resp.SecureURL)
 
 	fileName := path.Base(resp.SecureURL)
 
 	complaintCreateRequest.ImageUrl = fileName
+
+	complaintCreateRequest.Status = "unsolved"
 
 	result, err := c.ComplaintService.CreateComplaint(ctx, complaintCreateRequest)
 	if err != nil {
@@ -83,10 +82,10 @@ func (c *ComplaintControllerImpl) CreateComplaintController(ctx echo.Context) er
 		}
 
 		if strings.Contains(err.Error(), "error when creating complaint") {
-			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Create Complaint Error"))
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Create Complaint Failed"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Create Complaint Error"))
 	}
 
 	response := res.ComplaintDomaintoComplaintResponse(result)
