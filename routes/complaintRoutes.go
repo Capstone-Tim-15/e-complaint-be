@@ -28,6 +28,7 @@ func ComplaintRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	adminComplaintGroups := e.Group("admin/complaint")
 	adminComplaintGroups.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 	adminComplaintGroups.GET("", complaintController.GetComplaintsController)
+	adminComplaintGroups.GET("/search", complaintController.GetComplaintController)
 	adminComplaintGroups.PUT("", complaintController.UpdateComplaintController)
 	adminComplaintGroups.DELETE("", complaintController.DeleteComplaintController)
 

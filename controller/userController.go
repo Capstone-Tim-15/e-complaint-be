@@ -210,19 +210,19 @@ func (c *UserControllerImpl) ResetPasswordController(ctx echo.Context) error {
 		}
 
 		if strings.Contains(err.Error(), "new password and confirm new password do not match") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("New Password & Confirm New Password Do Not Match"))
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("New Password & Confirm New Password Do Not Match"))
 		}
 
 		if strings.Contains(err.Error(), "user not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("User Not Found"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update User Error"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Reset Password User Error"))
 	}
 
 	response := res.UserDomaintoUserResponse(result)
 
-	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Reset Password", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Reset Password", response))
 }
 
 func (c *UserControllerImpl) UpdatePhotoProfileController(ctx echo.Context) error {
@@ -232,24 +232,24 @@ func (c *UserControllerImpl) UpdatePhotoProfileController(ctx echo.Context) erro
 
 	fileHeader, err := ctx.FormFile("image")
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Missing attachment"))
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Missing Image"))
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error opening file"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Opening File"))
 	}
 	defer file.Close()
 
 	cldService, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error initializing Cloudinary"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Initializing Cloudinary"))
 	}
 
 	uploadParams := uploader.UploadParams{}
 	resp, err := cldService.Upload.Upload(context.Background(), file, uploadParams)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error uploading file to Cloudinary"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Uploading File to Cloudinary"))
 	}
 
 	fileName := path.Base(resp.SecureURL)
@@ -260,20 +260,16 @@ func (c *UserControllerImpl) UpdatePhotoProfileController(ctx echo.Context) erro
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
 		}
 
-		if strings.Contains(err.Error(), "new password and confirm new password do not match") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("New Password & Confirm New Password Do Not Match"))
-		}
-
 		if strings.Contains(err.Error(), "user not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("User Not Found"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update User Error"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update User Photo Profile Error"))
 	}
 
 	response := res.UserDomaintoUserResponse(result)
 
-	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Reset Password", response))
+	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Update Photo Profile", response))
 
 }
 
