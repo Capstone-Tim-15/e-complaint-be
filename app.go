@@ -27,6 +27,9 @@ func main() {
 	routes.CommentRoutes(app, DB, validate)
 	routes.AIRoutes(app, AI)
 
+	routes.FAQRoutes(app, DB, validate)
+	routes.CategoryRoutes(app, DB, validate)
+
 	routes.NewsRoutes(app, DB, validate)
 	routes.LikeRoutes(app, DB, validate)
 	routes.FeedbackRoutes(app, DB, validate)
