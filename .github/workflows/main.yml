@@ -1,8 +1,8 @@
-name: Docker Image CI
+name: Debug
 
 on:
   push:
-    branches: "release"
+    branches: "debug"
 
 jobs:
   build:
