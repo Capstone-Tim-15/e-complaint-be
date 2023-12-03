@@ -20,8 +20,9 @@ func OTPRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 
 	otpGroups := e.Group("otp")
 
-	otpGroups.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
-
 	otpGroups.POST("/send-otp", OTPController.CreateOTPController)
+	
+	otpGroups.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
+	
 	otpGroups.POST("/check-otp", OTPController.CheckOTPController)
 }
