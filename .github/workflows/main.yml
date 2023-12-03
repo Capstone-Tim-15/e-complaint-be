@@ -27,7 +27,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/complain:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/complain_debug:latest
      
   deploy:
     runs-on: ubuntu-latest
@@ -37,15 +37,15 @@ jobs:
         name: connect ssh
         uses: appleboy/ssh-action@v0.1.9
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ secrets.DEBUG_HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: 22
           script: |
             docker stop ${{ secrets.CNAME }}
             docker rm ${{ secrets.CNAME }}
-            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/complain
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/complain
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/complain_debug
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/complain_debug
             docker run --name ${{ secrets.CNAME }} \
               -p 8000:8000 \
               -d \
@@ -64,4 +64,4 @@ jobs:
               -e SMTP_PASSWORD=${{secrets.SMTP_PASSWORD}} \
               -e SENDER_EMAIL=${{secrets.SENDER_EMAIL}} \
               -e CLOUDINARY_URL=${{secrets.CLOUDINARY_URL}} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/complain
+              ${{ secrets.DOCKERHUB_USERNAME }}/complain_debug
