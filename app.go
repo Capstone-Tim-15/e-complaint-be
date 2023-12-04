@@ -38,7 +38,7 @@ func main() {
 	app.Use(middleware.CORS())
 	app.Use(middleware.LoggerWithConfig(
 		middleware.LoggerConfig{
-			Format: "method=${method}, uri=${uri}, status=${status}\n",
+			Format: "ip: ${host} | method: ${method} | uri: ${uri} | status: ${status}\n",
 		},
 	))
 
