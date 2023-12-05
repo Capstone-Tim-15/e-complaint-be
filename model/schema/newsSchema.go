@@ -11,6 +11,7 @@ type News struct {
 	UpdatedAt time.Time      `gorm:"autoUpdateTime:milli"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 	Admin_ID  string         `gorm:"column:admin_id;size:191"`
+	Admin     Admin          `gorm:"foreignKey:Admin_ID;references:ID"`
 	Title     string
 	Content   string
 	Date      time.Time

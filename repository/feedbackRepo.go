@@ -68,7 +68,7 @@ func (repository *FeedbackRepositoryImpl) Delete(id string) error {
 
 func (repository *FeedbackRepositoryImpl) FindById(id string) (*domain.Feedback, error) {
 	feedback := domain.Feedback{}
-	result := repository.DB.Where("deleted_at IS NULL").First(&feedback, "id = ?", id)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("User").First(&feedback, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}

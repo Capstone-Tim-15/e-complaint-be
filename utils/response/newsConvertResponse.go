@@ -18,18 +18,22 @@ func NewsSchemaToNewsDomain(news *schema.News) *domain.News {
 
 func NewsDomainToNewsResponse(news *domain.News) web.NewsResponse {
 	newsResponse := web.NewsResponse{
-		ID:       news.ID,
-		Admin_ID: news.Admin_ID,
-		Title:    news.Title,
-		Content:  news.Content,
-		Date:     news.Date,
+		ID:         news.ID,
+		Admin_ID:   news.Admin_ID,
+		Name:       news.Admin.Name,
+		PhotoImage: news.Admin.ImageUrl,
+		Title:      news.Title,
+		Content:    news.Content,
+		Date:       news.Date,
 	}
 	for _, f := range news.Feedback {
 		feedbackResponse := web.FeedbackResponse{
-			ID:      f.ID,
-			User_ID: f.User_ID,
-			News_ID: f.News_ID,
-			Content: f.Content,
+			ID:         f.ID,
+			User_ID:    f.User_ID,
+			Name:       f.User.Name,
+			PhotoImage: f.User.ImageUrl,
+			News_ID:    f.News_ID,
+			Content:    f.Content,
 		}
 		newsResponse.Feedback = append(newsResponse.Feedback, feedbackResponse)
 	}
@@ -51,18 +55,22 @@ func ConvertNewsResponse(news []domain.News) []web.NewsResponse {
 	var results []web.NewsResponse
 	for _, n := range news {
 		newsResponse := web.NewsResponse{
-			ID:       n.ID,
-			Admin_ID: n.Admin_ID,
-			Title:    n.Title,
-			Content:  n.Content,
-			Date:     n.Date,
+			ID:         n.ID,
+			Admin_ID:   n.Admin_ID,
+			Name:       n.Admin.Name,
+			PhotoImage: n.Admin.ImageUrl,
+			Title:      n.Title,
+			Content:    n.Content,
+			Date:       n.Date,
 		}
 		for _, f := range n.Feedback {
 			feedbackResponse := web.FeedbackResponse{
-				ID:      f.ID,
-				User_ID: f.User_ID,
-				News_ID: f.News_ID,
-				Content: f.Content,
+				ID:         f.ID,
+				User_ID:    f.User_ID,
+				Name:       f.User.Name,
+				PhotoImage: f.User.ImageUrl,
+				News_ID:    f.News_ID,
+				Content:    f.Content,
 			}
 			newsResponse.Feedback = append(newsResponse.Feedback, feedbackResponse)
 		}
