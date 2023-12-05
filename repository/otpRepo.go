@@ -26,7 +26,7 @@ func NewOTPRepository(DB *gorm.DB) OTPRepository {
 }
 
 func (r *OTPRepositoryImpl) Create(otp *domain.OTP) (*domain.OTP, error) {
-	var otpDb *schema.OTP
+	var otpDb *schema.OTPUser
 
 	for {
 		otpDb = req.OTPDomaintoOTPSchema(otp)
@@ -75,7 +75,7 @@ func (r *OTPRepositoryImpl) FindByUserId(id string) (*domain.OTP, error) {
 }
 
 func (r *OTPRepositoryImpl) Delete(id string) error {
-	result := r.DB.Table("otps").Where("id = ?", id).Delete(&schema.OTP{})
+	result := r.DB.Table("otps").Where("id = ?", id).Delete(&schema.OTPUser{})
 	if result.Error != nil {
 		return result.Error
 	}

@@ -5,8 +5,8 @@ import (
 	"ecomplaint/model/schema"
 )
 
-func OTPDomaintoOTPSchema(request *domain.OTP) *schema.OTP {
-	return &schema.OTP{
+func OTPDomaintoOTPSchema(request *domain.OTP) *schema.OTPUser {
+	return &schema.OTPUser{
 		User_ID: request.User_ID,
 		OTP:     request.OTP,
 	}
