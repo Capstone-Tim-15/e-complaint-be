@@ -13,7 +13,10 @@ import (
 type ComplaintRepository interface {
 	Create(complaint *domain.Complaint) (*domain.Complaint, error)
 	FindById(id string) (*domain.Complaint, error)
-	FindAll() ([]domain.Complaint, error)
+	FindByStatus(status string, page, pageSize int) ([]domain.Complaint, int64, error)
+	FindAll(page, pageSize int) ([]domain.Complaint, int64, error)
+	Update(complaint *domain.Complaint, id string) (*domain.Complaint, error)
+	Delete(complaint *domain.Complaint, id string) error
 }
 
 type ComplaintRepositoryImpl struct {
@@ -51,7 +54,7 @@ func (r *ComplaintRepositoryImpl) Create(complaint *domain.Complaint) (*domain.C
 func (r *ComplaintRepositoryImpl) FindById(id string) (*domain.Complaint, error) {
 	complaint := domain.Complaint{}
 
-	result := r.DB.Where("id = ?", id).Preload("Comment").Preload("Category").First(&complaint)
+	result := r.DB.Where("id = ?", id).Preload("Comment", func(DB *gorm.DB) *gorm.DB{return DB.Order("created_at DESC")}).Preload("Category").Preload("User").First(&complaint)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -59,13 +62,64 @@ func (r *ComplaintRepositoryImpl) FindById(id string) (*domain.Complaint, error)
 	return &complaint, nil
 }
 
-func (r *ComplaintRepositoryImpl) FindAll() ([]domain.Complaint, error) {
+func (r *ComplaintRepositoryImpl) FindByStatus(status string, page, pageSize int) ([]domain.Complaint, int64, error) {
+	offset := (page - 1) * pageSize
 	complaint := []domain.Complaint{}
+	var totalCount int64
 
-	result := r.DB.Where("deleted_at IS NULL").Preload("Category").Find(&complaint)
+	resultCount := r.DB.Model(&domain.Complaint{}).Where("status = ?", status).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil{
+		return nil, 0, resultCount.Error
+	}
+
+	result := r.DB.Debug().Where("status = ?", status).Preload("Comment").Preload("Category").Preload("User").Offset(offset).Limit(pageSize).Find(&complaint)
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	return complaint, totalCount, nil
+}
+
+func (r *ComplaintRepositoryImpl) FindAll(page, pageSize int) ([]domain.Complaint, int64, error) {
+	offset := (page - 1) * pageSize
+
+	complaints := []domain.Complaint{}
+	var totalCount int64
+
+	resultCount := r.DB.Model(&domain.Complaint{}).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
+	}
+
+	resultData := r.DB.Where("deleted_at IS NULL").Preload("Category").Preload("User").Offset(offset).Limit(pageSize).Order("created_at desc").Find(&complaints)
+
+	if resultData.Error != nil {
+		return nil, 0, resultData.Error
+	}
+
+	return complaints, totalCount, nil
+}
+
+func (r *ComplaintRepositoryImpl) Update(complaint *domain.Complaint, id string) (*domain.Complaint, error) {
+	complaintDb := req.ComplaintDomaintoComplaintSchema(*complaint)
+
+	result := r.DB.Debug().Table("complaints").Where("id", id).Updates(complaintDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
+	complaint = res.ComplaintSchemaToComplaintDomain(complaintDb)
+
 	return complaint, nil
+}
+
+func (r *ComplaintRepositoryImpl) Delete(complaint *domain.Complaint, id string) error {
+	complaintDb := req.ComplaintDomaintoComplaintSchema(*complaint)
+
+	result := r.DB.Where("id", id).Delete(&complaintDb)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
