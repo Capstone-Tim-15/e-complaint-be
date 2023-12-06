@@ -3,6 +3,7 @@ package main
 import (
 	"ecomplaint/config"
 	"ecomplaint/routes"
+	"ecomplaint/utils/helper/websocket"
 	"net/http"
 
 	"github.com/go-playground/validator"
@@ -14,6 +15,7 @@ func main() {
 	app := echo.New()
 	validate := validator.New()
 	DB := config.ConnectDB()
+	WS := websocket.NewHub()
 
 	app.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Welcome to RESTful API Services")
@@ -24,7 +26,9 @@ func main() {
 	routes.ComplaintRoutes(app, DB, validate)
 	routes.OTPRoutes(app, DB, validate)
 	routes.CommentRoutes(app, DB, validate)
-	routes.ChatRoutes(app, DB, validate)
+	routes.ChatRoutes(app, DB, validate, WS)
+
+	go WS.Run()
 
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())

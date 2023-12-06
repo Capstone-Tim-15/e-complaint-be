@@ -62,6 +62,7 @@ func GenerateToken(userLoginResponse *web.UserLoginResponse, id string) (string,
 	claims["id"] = id
 	claims["name"] = userLoginResponse.Name
 	claims["email"] = userLoginResponse.Email
+	claims["role"] = "user"
 	claims["exp"] = expireTime
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -96,6 +97,7 @@ func GenerateAdminToken(adminLoginResponse *web.AdminLoginResponse, id string) (
 	claims["id"] = id
 	claims["name"] = adminLoginResponse.Name
 	claims["email"] = adminLoginResponse.Email
+	claims["role"] = "admin"
 	claims["exp"] = expireTime
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
