@@ -27,5 +27,5 @@ type Status string
 const (
 	SOLVED    Status = "SOLVED"
 	UNSOLVED  Status = "UNSOLVED"
-	CANCELLED Status = "CANCELLED"
+	SEND Status = "SEND"
 )
