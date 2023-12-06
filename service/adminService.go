@@ -20,6 +20,7 @@ type AdminService interface {
 	FindByName(ctx echo.Context, name string) (*domain.Admin, error)
 	UpdateAdmin(ctx echo.Context, request web.AdminUpdateRequest, id string) (*domain.Admin, error)
 	ResetPassword(ctx echo.Context, request web.AdminResetPasswordRequest, id string) (*domain.Admin, error)
+	UpdatePhotoProfile(ctx echo.Context, id string, imageUrl string) (*domain.Admin, error)
 	DeleteAdmin(ctx echo.Context, id string) error
 }
 
@@ -171,6 +172,22 @@ func (s *AdminServiceImpl) ResetPassword(ctx echo.Context, request web.AdminRese
 
 	return result, nil
 
+}
+
+func (s *AdminServiceImpl) UpdatePhotoProfile(ctx echo.Context, id string, imageUrl string) (*domain.Admin, error) {
+	existingAdmin, _ := s.AdminRepository.FindById(id)
+	if existingAdmin == nil {
+		return nil, fmt.Errorf("admin not found")
+	}
+
+	existingAdmin.ImageUrl = imageUrl
+
+	_, err := s.AdminRepository.PhotoProfile(existingAdmin, id)
+	if err != nil {
+		return nil, fmt.Errorf("error when updating admin: %s", err.Error())
+	}
+
+	return existingAdmin, nil
 }
 
 func (s *AdminServiceImpl) DeleteAdmin(ctx echo.Context, id string) error {

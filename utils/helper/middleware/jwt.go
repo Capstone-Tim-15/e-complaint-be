@@ -89,6 +89,22 @@ func GenerateTokenUserID(id string) (string, error) {
 	return validToken, nil
 }
 
+func GenerateTokenAdminID(id string) (string, error) {
+	expireTime := time.Now().Add(time.Hour * 1).Unix()
+	claims := jwt.MapClaims{}
+	claims["authorized"] = true
+	claims["id"] = id
+	claims["exp"] = expireTime
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	validToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_ADMIN")))
+	if err != nil {
+		return "", err
+	}
+
+	return validToken, nil
+}
+
 func GenerateAdminToken(adminLoginResponse *web.AdminLoginResponse, id string) (string, error) {
 	expireTime := time.Now().Add(time.Hour * 1).Unix()
 	claims := jwt.MapClaims{}

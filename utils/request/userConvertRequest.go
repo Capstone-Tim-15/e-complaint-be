@@ -46,5 +46,6 @@ func UserDomaintoUserSchema(request domain.User) *schema.User {
 		Email:    request.Email,
 		Phone:    request.Phone,
 		Password: request.Password,
+		ImageUrl: request.ImageUrl,
 	}
 }

@@ -19,6 +19,7 @@ type UserRepository interface {
 	FindByName(name string) (*domain.User, error)
 	Update(user *domain.User, id string) (*domain.User, error)
 	ResetPassword(user *domain.User, id string) (*domain.User, error)
+	PhotoProfile(user *domain.User, id string) (*domain.User, error)
 	Delete(id string) error
 }
 
@@ -97,7 +98,7 @@ func (r *UserRepositoryImpl) FindAll(page, pageSize int) ([]domain.User, int64, 
 		return nil, 0, resultCount.Error
 	}
 
-	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Find(&users)
+	resultData := r.DB.Where("deleted_at IS NULL").Offset(offset).Limit(pageSize).Order("created_at desc").Find(&users)
 	if resultData.Error != nil {
 		return nil, 0, resultData.Error
 	}
@@ -132,6 +133,19 @@ func (r *UserRepositoryImpl) Update(user *domain.User, id string) (*domain.User,
 }
 
 func (r *UserRepositoryImpl) ResetPassword(user *domain.User, id string) (*domain.User, error) {
+	userDb := req.UserDomaintoUserSchema(*user)
+
+	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	user = res.UserSchemaToUserDomain(userDb)
+
+	return user, nil
+}
+
+func (r *UserRepositoryImpl) PhotoProfile(user *domain.User, id string) (*domain.User, error) {
 	userDb := req.UserDomaintoUserSchema(*user)
 
 	result := r.DB.Table("users").Where("id = ?", id).Updates(userDb)

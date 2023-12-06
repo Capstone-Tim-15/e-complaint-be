@@ -16,7 +16,8 @@ type User struct {
 	Email     string
 	Phone     string
 	Password  string
-	OTP       OTP         `gorm:"ForeignKey:User_ID;references:ID"`
+	ImageUrl  string
+	OTP       OTPUser         `gorm:"ForeignKey:User_ID;references:ID"`
 	Complaint []Complaint `gorm:"ForeignKey:User_ID;references:ID"`
 	Feedback  []Feedback  `gorm:"ForeignKey:User_ID;references:ID"`
 	Likes     []Likes     `gorm:"ForeignKey:User_ID;references:ID"`

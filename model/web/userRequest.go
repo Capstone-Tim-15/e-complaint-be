@@ -17,7 +17,7 @@ type UserUpdateRequest struct {
 	Name     string `json:"name" form:"name" validate:"required,min=1,max=255"`
 	Username string `json:"username" form:"username" validate:"required,min=1,max=16"`
 	Email    string `json:"email" form:"email" validate:"required,email,min=1,max=255"`
-	Phone    string `json:"phone" form:"phone" validate:"required,phone,min=1,max=255"`
+	Phone    string `json:"phone" form:"phone" validate:"required,min=1,max=255"`
 	Password string `json:"password" form:"password" validate:"required,min=8,max=255"`
 }
 

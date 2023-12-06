@@ -14,6 +14,8 @@ import (
 
 type CommentService interface {
 	CreateComment(ctx echo.Context, request web.CommentCreateRequest) (*domain.Comment, error)
+	CheckUser(senderId string) (*domain.User, error)
+	CheckAdmin(senderId string) (*domain.Admin, error)
 }
 
 type CommentServiceImpl struct {
@@ -39,6 +41,24 @@ func (s *CommentServiceImpl) CreateComment(ctx echo.Context, request web.Comment
 	result, err := s.CommentRepository.Create(mess)
 	if err != nil {
 		return nil, fmt.Errorf("error when creating message: %s", err.Error())
+	}
+
+	return result, nil
+}
+
+func (s *CommentServiceImpl) CheckUser(senderId string) (*domain.User, error) {
+	result, err := s.CommentRepository.CheckUser(senderId)
+	if err != nil {
+		return nil, fmt.Errorf("error when check user: %s", err.Error())
+	}
+
+	return result, nil
+}
+
+func (s *CommentServiceImpl) CheckAdmin(senderId string) (*domain.Admin, error) {
+	result, err := s.CommentRepository.CheckAdmin(senderId)
+	if err != nil {
+		return nil, fmt.Errorf("error when check admin: %s", err.Error())
 	}
 
 	return result, nil
