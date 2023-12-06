@@ -15,6 +15,7 @@ func ComplaintSchemaToComplaintDomain(complaint *schema.Complaint) *domain.Compl
 		Content:     complaint.Content,
 		Status:      string(complaint.Status),
 		ImageUrl:    complaint.ImageUrl,
+		CreatedAt:   complaint.CreatedAt.String(),
 	}
 }
 
@@ -32,13 +33,14 @@ func ComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.Complai
 
 func FindComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.ComplaintResponse {
 	complaintResponse := web.ComplaintResponse{
-		ID:       complaint.ID,
-		User_ID:  complaint.User_ID,
-		Category: complaint.Category.Name,
-		Title:    complaint.Title,
-		Content:  complaint.Content,
-		Status:   complaint.Status,
-		ImageUrl: complaint.ImageUrl,
+		ID:        complaint.ID,
+		User_ID:   complaint.User_ID,
+		Category:  complaint.Category.Name,
+		Title:     complaint.Title,
+		Content:   complaint.Content,
+		Status:    complaint.Status,
+		ImageUrl:  complaint.ImageUrl,
+		CreatedAt: complaint.CreatedAt,
 
 		Comment: make([]web.CommentResponse, len(complaint.Comment)),
 	}
@@ -60,13 +62,14 @@ func ConvertComplaintResponse(complaints []domain.Complaint) []web.ComplaintResp
 	var results []web.ComplaintResponse
 	for _, complaint := range complaints {
 		complaintResponse := web.ComplaintResponse{
-			ID:       complaint.ID,
-			User_ID:  complaint.User_ID,
-			Category: complaint.Category.Name,
-			Title:    complaint.Title,
-			Content:  complaint.Content,
-			Status:   complaint.Status,
-			ImageUrl: complaint.ImageUrl,
+			ID:        complaint.ID,
+			User_ID:   complaint.User_ID,
+			Category:  complaint.Category.Name,
+			Title:     complaint.Title,
+			Content:   complaint.Content,
+			Status:    complaint.Status,
+			ImageUrl:  complaint.ImageUrl,
+			CreatedAt: complaint.CreatedAt,
 		}
 		results = append(results, complaintResponse)
 	}
