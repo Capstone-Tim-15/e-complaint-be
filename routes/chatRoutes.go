@@ -27,13 +27,10 @@ func ChatRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate, hub *we
 
 	chatGroups.POST("/create-room", chatController.CreateRoom)
 	chatGroups.GET("/join-room/:roomId", chatController.JoinRoom)
-	chatGroups.GET("/get-rooms", chatController.GetRooms)
-	chatGroups.GET("/get-clients/:roomId", chatController.GetClients)
 	chatGroups.GET("/get-chats/:roomId", chatController.GetChats)
 
 	chatAdminGroups.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
-	chatAdminGroups.POST("/create-room", chatController.CreateRoom)
 	chatAdminGroups.GET("/join-room/:roomId", chatController.JoinRoom)
 	chatAdminGroups.GET("/get-rooms", chatController.GetRooms)
 	chatAdminGroups.GET("/get-clients/:roomId", chatController.GetClients)
