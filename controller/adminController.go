@@ -222,7 +222,7 @@ func (c *AdminControllerImpl) ResetPasswordController(ctx echo.Context) error {
 
 	response := res.AdminDomaintoAdminResponse(result)
 
-	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Reset Password", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Reset Password", response))
 }
 
 func (c *AdminControllerImpl) UpdatePhotoProfileController(ctx echo.Context) error {

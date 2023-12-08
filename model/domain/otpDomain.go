@@ -1,7 +1,15 @@
 package domain
 
-type OTP struct {
-	ID        string
-	User_ID   string
-	OTP       string
+type OTPUser struct {
+	ID       string
+	User_ID  string
+	Admin_ID string
+	OTP      string
+}
+
+type OTPAdmin struct {
+	ID       string
+	User_ID  string
+	Admin_ID string
+	OTP      string
 }
