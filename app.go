@@ -34,11 +34,13 @@ func main() {
 	routes.LikeRoutes(app, DB, validate)
 	routes.FeedbackRoutes(app, DB, validate)
 
+	routes.DashboardRoutes(app, DB)
+
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
 	app.Use(middleware.LoggerWithConfig(
 		middleware.LoggerConfig{
-			Format: "method=${method}, uri=${uri}, status=${status}\n",
+			Format: "ip: ${host} | method: ${method} | uri: ${uri} | status: ${status}\n",
 		},
 	))
 
