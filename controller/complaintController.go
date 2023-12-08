@@ -73,7 +73,7 @@ func (c *ComplaintControllerImpl) CreateComplaintController(ctx echo.Context) er
 
 	complaintCreateRequest.ImageUrl = fileName
 
-	complaintCreateRequest.Status = "unsolved"
+	complaintCreateRequest.Status = "SEND"
 
 	result, err := c.ComplaintService.CreateComplaint(ctx, complaintCreateRequest)
 	if err != nil {
