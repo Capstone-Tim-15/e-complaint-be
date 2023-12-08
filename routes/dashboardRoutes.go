@@ -3,25 +3,19 @@ package routes
 import (
 	"ecomplaint/controller"
 	"ecomplaint/repository"
-	"ecomplaint/service"
-	"github.com/go-playground/validator"
-	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	"os"
 )
 
-func DashboardRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
+func DashboardRoutes(e *echo.Echo, db *gorm.DB) {
 
 	dashboardRepo := repository.NewDashboardRepository(db)
-	dashboardControl := controller.NewDashboardController()
+	dashboardController := controller.NewDashboardController(dashboardRepo)
 
-	faqRepository := repository.NewFAQRepository(db)
-	faqService := service.NewFaqService(faqRepository, validate)
-	faqController := controller.NewFaqController(faqService)
+	dashboardGroup := e.Group("admin/dashboard")
 
-	faqsGroup.POST("", faqController.CreateFaqController)
-	faqsGroup.GET("/search/:id", faqController.FindController)
-	faqsGroup.GET("/search", faqController.FindController)
-	faqsGroup.PUT("/:id", faqController.UpdateFaqController)
+	dashboardGroup.GET("/complaint", dashboardController.GetDashboardComplaintController)
+	dashboardGroup.GET("/solved", dashboardController.GetDashboardSolvedController)
+	dashboardGroup.GET("/user", dashboardController.GetDashboardUserController)
+
 }
