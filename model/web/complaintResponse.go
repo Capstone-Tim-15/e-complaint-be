@@ -10,6 +10,7 @@ type ComplaintResponse struct {
 	Content    string            `json:"content"`
 	Status     string            `json:"status"`
 	ImageUrl   string            `json:"imageUrl"`
+	CreatedAt  string            `json:"createdAt"`
 	Comment    []CommentResponse `json:"comment"`
 }
 
