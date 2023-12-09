@@ -17,5 +17,6 @@ type Admin struct {
 	Phone     string
 	Password  string
 	ImageUrl  string
-	News      []News      `gorm:"ForeignKey:Admin_ID;references:ID"`
+	OTP       OTPAdmin `gorm:"ForeignKey:Admin_ID;references:ID"`
+	News      []News   `gorm:"ForeignKey:Admin_ID;references:ID"`
 }
