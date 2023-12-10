@@ -21,6 +21,7 @@ import (
 type ComplaintController interface {
 	CreateComplaintController(ctx echo.Context) error
 	GetComplaintController(ctx echo.Context) error
+	GetComplaintsByStatusSolved(ctx echo.Context) error
 	GetComplaintsController(ctx echo.Context) error
 	UpdateComplaintController(ctx echo.Context) error
 	DeleteComplaintController(ctx echo.Context) error
@@ -132,6 +133,31 @@ func (c *ComplaintControllerImpl) GetComplaintController(ctx echo.Context) error
 		return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint By Status", page, pageSize, totalCount, response))
 	}
 	return nil
+}
+
+func (c *ComplaintControllerImpl) GetComplaintsByStatusSolved(ctx echo.Context) error {
+	statusQuery := "SOLVED"
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+	limit, err := strconv.Atoi(ctx.QueryParam("limit"))
+	if err != nil || limit <= 0 {
+		limit = 10
+	}
+
+	result, totalCount, err := c.ComplaintService.FindByStatus(ctx, statusQuery, page, limit)
+	if err != nil {
+		if strings.Contains(err.Error(), "complaint not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
+		}
+
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Complaint By Status Solved Error"))
+	}
+
+	response := res.FindStatusComplaintDomaintoComplaintResponse(result)
+
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint By Status Solved", page, limit, totalCount, response))
 }
 
 func (c *ComplaintControllerImpl) GetComplaintsController(ctx echo.Context) error {
