@@ -8,7 +8,9 @@ type Complaint struct {
 	Category    Category
 	Title       string
 	Content     string
+	Address     string
 	Status      string
 	ImageUrl    string
+	CreatedAt   string
 	Comment     []Comment
 }

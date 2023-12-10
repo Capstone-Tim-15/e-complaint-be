@@ -20,17 +20,19 @@ func OTPRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	OTPController := controller.NewOTPController(OTPService)
 
 	otpGroups := e.Group("otp/user")
-	otpAdminGroups := e.Group("otp/admin")
 
 	otpGroups.POST("/send-otp", OTPController.CreateOTPUserController)
 
 	otpGroups.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 
 	otpGroups.POST("/check-otp", OTPController.CheckOTPUserController)
-
-	otpAdminGroups.POST("/send-otp", OTPController.CreateOTPAdminController)
+  
+  otpAdminGroups := e.Group("otp/admin")
+  
+  otpAdminGroups.POST("/send-otp", OTPController.CreateOTPAdminController)
 
 	otpAdminGroups.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
 	otpAdminGroups.POST("/check-otp", OTPController.CheckOTPAdminController)
 }
+
