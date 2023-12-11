@@ -15,6 +15,7 @@ func ComplaintSchemaToComplaintDomain(complaint *schema.Complaint) *domain.Compl
 		Content:     complaint.Content,
 		Status:      string(complaint.Status),
 		ImageUrl:    complaint.ImageUrl,
+		CreatedAt:   complaint.CreatedAt.String(),
 	}
 }
 
@@ -32,15 +33,14 @@ func ComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.Complai
 
 func FindComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.ComplaintResponse {
 	complaintResponse := web.ComplaintResponse{
-		ID:         complaint.ID,
-		User_ID:    complaint.User_ID,
-		Name:       complaint.User.Name,
-		PhotoImage: complaint.User.ImageUrl,
-		Category:   complaint.Category.CategoryName,
-		Title:      complaint.Title,
-		Content:    complaint.Content,
-		Status:     complaint.Status,
-		ImageUrl:   complaint.ImageUrl,
+		ID:        complaint.ID,
+		User_ID:   complaint.User_ID,
+		Category:  complaint.Category.CategoryName,
+		Title:     complaint.Title,
+		Content:   complaint.Content,
+		Status:    complaint.Status,
+		ImageUrl:  complaint.ImageUrl,
+		CreatedAt: complaint.CreatedAt,
 
 		Comment: make([]web.CommentResponse, len(complaint.Comment)),
 	}
@@ -49,7 +49,6 @@ func FindComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.Com
 		commentResponse := web.CommentResponse{
 			ID:           comment.ID,
 			Complaint_ID: comment.Complaint_ID,
-			Fullname:     comment.Fullname,
 			Role:         comment.Role,
 			Message:      comment.Message,
 		}
@@ -72,6 +71,7 @@ func FindStatusComplaintDomaintoComplaintResponse(complaints []domain.Complaint)
 			Content:    complaint.Content,
 			Status:     complaint.Status,
 			ImageUrl:   complaint.ImageUrl,
+			CreatedAt:  complaint.CreatedAt,
 
 			Comment: make([]web.CommentResponse, len(complaint.Comment)),
 		}
@@ -94,15 +94,14 @@ func ConvertComplaintResponse(complaints []domain.Complaint) []web.ComplaintResp
 	var results []web.ComplaintResponse
 	for _, complaint := range complaints {
 		complaintResponse := web.ComplaintResponse{
-			ID:         complaint.ID,
-			User_ID:    complaint.User_ID,
-			Name:       complaint.User.Name,
-			PhotoImage: complaint.User.ImageUrl,
-			Category:   complaint.Category.CategoryName,
-			Title:      complaint.Title,
-			Content:    complaint.Content,
-			Status:     complaint.Status,
-			ImageUrl:   complaint.ImageUrl,
+			ID:        complaint.ID,
+			User_ID:   complaint.User_ID,
+			Category:  complaint.Category.CategoryName,
+			Title:     complaint.Title,
+			Content:   complaint.Content,
+			Status:    complaint.Status,
+			ImageUrl:  complaint.ImageUrl,
+			CreatedAt: complaint.CreatedAt,
 		}
 		results = append(results, complaintResponse)
 	}

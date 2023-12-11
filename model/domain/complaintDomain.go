@@ -10,5 +10,6 @@ type Complaint struct {
 	Content     string
 	Status      string
 	ImageUrl    string
+	CreatedAt   string
 	Comment     []Comment
 }

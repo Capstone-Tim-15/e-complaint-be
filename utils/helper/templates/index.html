@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #output-container {
+            max-width: 600px;
+            margin: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            height: 300px;
+        }
+
+        #message-input {
+            width: 80%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        #send-button {
+            width: 18%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WebSocket Tester</h1>
+    <div id="output-container"></div>
+    <input type="text" id="message-input" placeholder="Type your message...">
+    <button id="send-button" onclick="sendMessage()">Send</button>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/chat/ws/1tCHiO");
+
+        socket.onopen = () => {
+            writeToOutput("WebSocket connection opened");
+        };
+
+        socket.onmessage = (event) => {
+            console.log("diterima");
+            const message = JSON.parse(event.data);
+            writeToOutput(`Received: ${message.text}`);
+
+        };
+
+        socket.onclose = () => {
+            writeToOutput("WebSocket connection closed");
+        };
+
+        function sendMessage() {
+            const messageInput = document.getElementById("message-input");
+            const message = messageInput.value;
+
+            if (message.trim() !== "") {
+                socket.send(JSON.stringify({ text: message }));
+                writeToOutput(`Sent: ${message}`);
+                messageInput.value = "";
+            }
+        }
+
+        function writeToOutput(message) {
+            const outputContainer = document.getElementById("output-container");
+            const messageElement = document.createElement("div");
+            messageElement.textContent = message;
+            outputContainer.appendChild(messageElement);
+            outputContainer.scrollTop = outputContainer.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
