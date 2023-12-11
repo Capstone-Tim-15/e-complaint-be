@@ -15,6 +15,8 @@ import (
 type ComplaintService interface {
 	CreateComplaint(ctx echo.Context, request web.ComplaintCreateRequest) (*domain.Complaint, error)
 	FindById(ctx echo.Context, id string) (*domain.Complaint, error)
+	FindByStatusUser(ctx echo.Context, status, id string) ([]domain.Complaint, error)
+	FindByCategory(ctx echo.Context, category string, limit int64) ([]domain.Complaint, int64, error)
 	FindByStatus(ctx echo.Context, status string, page, pageSize int) ([]domain.Complaint, int64, error)
 	FindAll(ctx echo.Context, page, pageSize int) ([]domain.Complaint, int64, error)
 	UpdateComplaint(ctx echo.Context, id string, request web.ComplaintUpdateRequest) (*domain.Complaint, error)
@@ -60,6 +62,32 @@ func (s ComplaintServiceImpl) FindById(ctx echo.Context, id string) (*domain.Com
 	}
 
 	return complaint, nil
+}
+
+func (s ComplaintServiceImpl) FindByStatusUser(ctx echo.Context, status, id string) ([]domain.Complaint, error) {
+	complaints, err := s.ComplaintRepository.FindByStatusUser(status, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if complaints == nil {
+		return nil, fmt.Errorf("complaints not found")
+	}
+
+	return complaints, nil
+}
+
+func (s ComplaintServiceImpl) FindByCategory(ctx echo.Context, category string, limit int64) ([]domain.Complaint, int64, error) {
+	complaints, totalCount, err := s.ComplaintRepository.FindByCategory(category, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if complaints == nil {
+		return nil, 0, fmt.Errorf("complaints not found")
+	}
+
+	return complaints, totalCount, nil
 }
 
 func (s ComplaintServiceImpl) FindByStatus(ctx echo.Context, status string, page, pageSize int) ([]domain.Complaint, int64, error) {
