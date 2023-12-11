@@ -70,7 +70,7 @@ func (r OTPRepositoryImpl) FindByUserEmail(email string) (*domain.OTPUser, error
 func (r *OTPRepositoryImpl) FindByUserId(id string) (*domain.OTPUser, error) {
 	otp := domain.OTPUser{}
 
-	result := r.DB.Where("user_id = ?", id).First(&otp)
+	result := r.DB.Where("user_id = ?", id).Order("created_at DESC").First(&otp)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -128,7 +128,7 @@ func (r OTPRepositoryImpl) FindByAdminEmail(email string) (*domain.OTPAdmin, err
 func (r *OTPRepositoryImpl) FindByAdminId(id string) (*domain.OTPAdmin, error) {
 	otp := domain.OTPAdmin{}
 
-	result := r.DB.Where("admin_id = ?", id).First(&otp)
+	result := r.DB.Where("admin_id = ?", id).Order("created_at DESC").First(&otp)
 	if result.Error != nil {
 		return nil, result.Error
 	}
