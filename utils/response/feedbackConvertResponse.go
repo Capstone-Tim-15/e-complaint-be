@@ -15,14 +15,12 @@ func FeedbackSchemaToFeedbackDomain(feedback *schema.Feedback) *domain.Feedback 
 	}
 }
 
-func FeedbackDomainToFeedbackResponse(feedback *domain.Feedback) web.FeedbackResponse {
-	return web.FeedbackResponse{
-		ID:         feedback.ID,
-		User_ID:    feedback.User_ID,
-		Name:       feedback.User.Name,
-		PhotoImage: feedback.User.ImageUrl,
-		News_ID:    feedback.News_ID,
-		Content:    feedback.Content,
+func FeedbackDomainToFeedbackResponse(feedback *domain.Feedback) web.FeedbackCreateResponse {
+	return web.FeedbackCreateResponse{
+		ID:      feedback.ID,
+		User_ID: feedback.User_ID,
+		News_ID: feedback.News_ID,
+		Content: feedback.Content,
 	}
 }
 
@@ -40,4 +38,15 @@ func ConvertFeedbackResponse(feedback []domain.Feedback) []web.FeedbackResponse 
 		results = append(results, feedbackResponse)
 	}
 	return results
+}
+
+func FindFeedbackDomainToFeedbackResponse(feedback *domain.Feedback) web.FeedbackResponse {
+	return web.FeedbackResponse{
+		ID:         feedback.ID,
+		User_ID:    feedback.User_ID,
+		Name:       feedback.User.Name,
+		PhotoImage: feedback.User.ImageUrl,
+		News_ID:    feedback.News_ID,
+		Content:    feedback.Content,
+	}
 }

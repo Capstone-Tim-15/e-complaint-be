@@ -1,12 +1,18 @@
 package controller
 
 import (
+	"context"
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
+	"github.com/cloudinary/cloudinary-go"
+	"github.com/cloudinary/cloudinary-go/api/uploader"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"os"
+	"path"
 	"strconv"
 	"strings"
 )
@@ -44,7 +50,7 @@ func (c *NewsControllerImpl) GetNewsController(ctx echo.Context) error {
 			}
 			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get News Error"))
 		}
-		response := res.NewsDomainToNewsResponse(result)
+		response := res.FindNewsDomainToNewsResponse(result)
 		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get News Data", response))
 	} else if newsTitle != "" {
 		result, totalCount, err := c.NewsService.FindByTitle(ctx, newsTitle, page, pageSize)
@@ -87,6 +93,45 @@ func (c *NewsControllerImpl) CreateNewsController(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
+
+	userData := ctx.Get("user")
+	if userData == nil {
+		return ctx.JSON(http.StatusUnauthorized, helper.ErrorResponse("Unauthorized: Token not provided"))
+	}
+
+	user, ok := userData.(*jwt.Token)
+	if !ok || !user.Valid {
+		return ctx.JSON(http.StatusUnauthorized, helper.ErrorResponse("Unauthorized: Invalid Token"))
+	}
+
+	claims := user.Claims.(jwt.MapClaims)
+	ID, ok := claims["id"].(string)
+	if !ok {
+		return ctx.JSON(http.StatusUnauthorized, helper.ErrorResponse("Unauthorized: Invalid Token"))
+	}
+	newsCreateRequest.Admin_ID = ID
+
+	fileHeader, err := ctx.FormFile("attachment")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Missing Attachment"))
+	}
+	file, err := fileHeader.Open()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Opening file"))
+	}
+	defer file.Close()
+	cldService, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Initializing Cloudinary"))
+	}
+	uploadParams := uploader.UploadParams{}
+	resp, err := cldService.Upload.Upload(context.Background(), file, uploadParams)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Uploading File to Cloudinary"))
+	}
+	fileName := path.Base(resp.SecureURL)
+	newsCreateRequest.ImageUrl = fileName
+
 	result, err := c.NewsService.CreateNews(ctx, newsCreateRequest)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {

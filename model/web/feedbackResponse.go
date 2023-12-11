@@ -8,3 +8,10 @@ type FeedbackResponse struct {
 	News_ID    string `json:"newsId"`
 	Content    string `json:"content"`
 }
+
+type FeedbackCreateResponse struct {
+	ID      string `json:"id"`
+	User_ID string `json:"userId"`
+	News_ID string `json:"newsId"`
+	Content string `json:"content"`
+}
