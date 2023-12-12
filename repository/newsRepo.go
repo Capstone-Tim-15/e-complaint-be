@@ -16,6 +16,7 @@ type NewsRepository interface {
 	FindById(id string) (*domain.News, error)
 	FindByAll(page, pageSize int) ([]domain.News, int64, error)
 	FindByTitle(title string, page, pageSize int) ([]domain.News, int64, error)
+	FindByCategory(category string, limit int64) ([]domain.News, int64, error)
 }
 
 type NewsRepositoryImpl struct {
@@ -102,6 +103,21 @@ func (repository *NewsRepositoryImpl) FindByTitle(title string, page, pageSize i
 		return nil, 0, resultCount.Error
 	}
 	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback.User").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news, "title LIKE  ?", title+"%")
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+	return news, totalCount, nil
+}
+
+func (repository *NewsRepositoryImpl) FindByCategory(category string, limit int64) ([]domain.News, int64, error) {
+	news := []domain.News{}
+	var totalCount int64
+
+	resultCount := repository.DB.Model(&domain.News{}).Where("category_id = ?", category).Where("deleted_at IS NULL").Count(&totalCount)
+	if resultCount.Error != nil {
+		return nil, 0, resultCount.Error
+	}
+	result := repository.DB.Where("category_id = ?", category).Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback.User").Preload("Likes").Preload("Category").Order("created_at desc").Limit(int(limit)).Find(&news)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
