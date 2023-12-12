@@ -14,11 +14,11 @@ type AdminLoginRequest struct {
 }
 
 type AdminUpdateRequest struct {
-	Name     string `json:"name" form:"name" validate:"min=1,max=255"`
-	Username string `json:"username" form:"username" validate:"required,min=1,max=16"`
-	Email    string `json:"email" form:"email" validate:"email,min=1,max=255"`
-	Phone    string `json:"phone" form:"phone" validate:"required,min=1,max=14"`
-	Password string `json:"password" form:"password" validate:"min=8,max=255"`
+	Name     string `json:"name" form:"name" validate:"omitempty,min=1,max=255"`
+	Username string `json:"username" form:"username" validate:"omitempty,min=1,max=16"`
+	Email    string `json:"email" form:"email" validate:"omitempty,email,min=1,max=255"`
+	Phone    string `json:"phone" form:"phone" validate:"omitempty,min=1,max=14"`
+	Password string `json:"password" form:"password" validate:"omitempty,min=8,max=255"`
 }
 
 type AdminResetPasswordRequest struct {
