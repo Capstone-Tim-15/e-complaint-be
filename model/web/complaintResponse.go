@@ -8,6 +8,7 @@ type ComplaintResponse struct {
 	Category   string            `json:"category"`
 	Title      string            `json:"title"`
 	Content    string            `json:"content"`
+	Address    string            `json:"address"`
 	Status     string            `json:"status"`
 	ImageUrl   string            `json:"imageUrl"`
 	CreatedAt  string            `json:"createdAt"`
@@ -20,6 +21,7 @@ type ComplaintCreateResponse struct {
 	Category string `json:"category"`
 	Title    string `json:"title"`
 	Content  string `json:"content"`
+	Address  string `json:"address"`
 	Status   string `json:"status"`
 	ImageUrl string `json:"imageUrl"`
 }

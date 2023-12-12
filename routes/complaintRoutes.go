@@ -23,6 +23,7 @@ func ComplaintRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 
 	complaintGroups.POST("", complaintController.CreateComplaintController)
 	complaintGroups.GET("/search", complaintController.GetComplaintController)
+	complaintGroups.GET("/status/solved", complaintController.GetComplaintsByStatusSolved)
 	complaintGroups.GET("", complaintController.GetComplaintsController)
 
 	adminComplaintGroups := e.Group("admin/complaint")
