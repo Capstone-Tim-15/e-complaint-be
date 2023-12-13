@@ -1,15 +1,23 @@
 package controller
 
 import (
+	"context"
 	"ecomplaint/model/web"
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	"ecomplaint/utils/helper/middleware"
 	res "ecomplaint/utils/response"
 	"net/http"
+	"os"
+	"path"
+
+	"strconv"
 
 	"strings"
 
+	"github.com/cloudinary/cloudinary-go"
+	"github.com/cloudinary/cloudinary-go/api/uploader"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,6 +28,7 @@ type UserController interface {
 	GetUsersController(ctx echo.Context) error
 	UpdateUserController(ctx echo.Context) error
 	ResetPasswordController(ctx echo.Context) error
+	UpdatePhotoProfileController(ctx echo.Context) error
 	DeleteUserController(ctx echo.Context) error
 }
 
@@ -46,6 +55,11 @@ func (c *UserControllerImpl) RegisterUserController(ctx echo.Context) error {
 
 		if strings.Contains(err.Error(), "email already exist") {
 			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
+		}
+
+		if strings.Contains(err.Error(), "username already exist") {
+			return ctx.JSON(http.StatusConflict, helper.ErrorResponse("Username Already Exist"))
+
 		}
 
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Sign Up Error"))
@@ -130,7 +144,14 @@ func (c *UserControllerImpl) GetUserController(ctx echo.Context) error {
 }
 
 func (c *UserControllerImpl) GetUsersController(ctx echo.Context) error {
-	result, err := c.UserService.FindAll(ctx)
+	page, err := strconv.Atoi(ctx.QueryParam("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	pageSize := 10
+
+	result, totalCount, err := c.UserService.FindAll(ctx, page, pageSize)
 	if err != nil {
 		if strings.Contains(err.Error(), "users not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Users Not Found"))
@@ -141,7 +162,7 @@ func (c *UserControllerImpl) GetUsersController(ctx echo.Context) error {
 
 	response := res.ConvertUserResponse(result)
 
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get User Data", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get User Data", page, pageSize, totalCount, response))
 }
 
 func (c *UserControllerImpl) UpdateUserController(ctx echo.Context) error {
@@ -178,26 +199,78 @@ func (c *UserControllerImpl) ResetPasswordController(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
 
-	result, err := c.UserService.ResetPassword(ctx, resetPasswordRequest)
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := (claims["id"].(string))
+
+	result, err := c.UserService.ResetPassword(ctx, resetPasswordRequest, ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
 		}
 
 		if strings.Contains(err.Error(), "new password and confirm new password do not match") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("New Password & Confirm New Password Do Not Match"))
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("New Password & Confirm New Password Do Not Match"))
 		}
 
 		if strings.Contains(err.Error(), "user not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("User Not Found"))
 		}
 
-		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update User Error"))
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Reset Password User Error"))
 	}
 
 	response := res.UserDomaintoUserResponse(result)
 
-	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Reset Password", response))
+	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Reset Password", response))
+}
+
+func (c *UserControllerImpl) UpdatePhotoProfileController(ctx echo.Context) error {
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := claims["id"].(string)
+
+	fileHeader, err := ctx.FormFile("image")
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Missing Image"))
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Opening File"))
+	}
+	defer file.Close()
+
+	cldService, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Initializing Cloudinary"))
+	}
+
+	uploadParams := uploader.UploadParams{}
+	resp, err := cldService.Upload.Upload(context.Background(), file, uploadParams)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Uploading File to Cloudinary"))
+	}
+
+	fileName := path.Base(resp.SecureURL)
+
+	result, err := c.UserService.UpdatePhotoProfile(ctx, ID, fileName)
+	if err != nil {
+		if strings.Contains(err.Error(), "validation failed") {
+			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
+		}
+
+		if strings.Contains(err.Error(), "user not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("User Not Found"))
+		}
+
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update User Photo Profile Error"))
+	}
+
+	response := res.UserDomaintoUserResponse(result)
+
+	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Update Photo Profile", response))
+
 }
 
 func (c *UserControllerImpl) DeleteUserController(ctx echo.Context) error {
