@@ -24,7 +24,6 @@ func FeedbackRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 
 	adminFeedbackGroup := e.Group("/admin/news/feedback")
 	adminFeedbackGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
-
 	adminFeedbackGroup.POST("", feedbackController.CreateFeedbackController)
 	adminFeedbackGroup.GET("/search", feedbackController.GetFeedbackController)
 	adminFeedbackGroup.GET("", feedbackController.GetAllFeedbackController)

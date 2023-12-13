@@ -6,6 +6,8 @@ import (
 	"ecomplaint/utils/helper"
 	req "ecomplaint/utils/request"
 	res "ecomplaint/utils/response"
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -30,6 +32,7 @@ func NewNewsRepository(DB *gorm.DB) NewsRepository {
 func (repository *NewsRepositoryImpl) Create(news *domain.News) (*domain.News, error) {
 	var newsDb *schema.News
 	newsDb = req.NewsDomaintoNewsSchema(*news)
+	fmt.Println(newsDb.Category_ID)
 	for {
 		newsDb = req.NewsDomaintoNewsSchema(*news)
 		newsDb.ID = helper.GenerateRandomString()
@@ -87,7 +90,7 @@ func (repository *NewsRepositoryImpl) FindByAll(page, pageSize int) ([]domain.Ne
 		return nil, 0, resultCount.Error
 	}
 
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback.User").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
@@ -102,7 +105,7 @@ func (repository *NewsRepositoryImpl) FindByTitle(title string, page, pageSize i
 	if resultCount.Error != nil {
 		return nil, 0, resultCount.Error
 	}
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback.User").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news, "title LIKE  ?", title+"%")
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news, "title LIKE  ?", title+"%")
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
@@ -117,7 +120,7 @@ func (repository *NewsRepositoryImpl) FindByCategory(category string, limit int6
 	if resultCount.Error != nil {
 		return nil, 0, resultCount.Error
 	}
-	result := repository.DB.Where("category_id = ?", category).Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback.User").Preload("Likes").Preload("Category").Order("created_at desc").Limit(int(limit)).Find(&news)
+	result := repository.DB.Where("category_id = ?", category).Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").Order("created_at desc").Limit(int(limit)).Find(&news)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}

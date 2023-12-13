@@ -5,11 +5,12 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 )
 
 type FeedbackController interface {
@@ -84,8 +85,20 @@ func (c *FeedbackControllerImpl) CreateFeedbackController(ctx echo.Context) erro
 	user := ctx.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	ID := claims["id"].(string)
-
-	feedbackCreateRequest.User_ID = ID
+	userResult, err := c.FeedbackService.CheckUser(ID)
+	if err == nil {
+		feedbackCreateRequest.Fullname = userResult.Name
+		feedbackCreateRequest.PhotoImage = userResult.ImageUrl
+		feedbackCreateRequest.Role = "user"
+	} else {
+		adminResult, err := c.FeedbackService.CheckAdmin(ID)
+		if err != nil {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Error When Check Sender Account"))
+		}
+		feedbackCreateRequest.Fullname = adminResult.Name
+		feedbackCreateRequest.PhotoImage = adminResult.ImageUrl
+		feedbackCreateRequest.Role = "admin"
+	}
 
 	result, err := c.FeedbackService.CreateFeedback(ctx, feedbackCreateRequest)
 	if err != nil {

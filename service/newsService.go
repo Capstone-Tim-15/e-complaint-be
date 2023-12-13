@@ -39,7 +39,7 @@ func (ns *NewsServiceImp) CreateNews(ctx echo.Context, request web.NewsCreateReq
 		return nil, helper.ValidationError(ctx, err)
 	}
 	news := req.NewsCreateRequestToNewsDomain(request)
-
+	fmt.Println(news.Category_ID)
 	result, err := ns.NewsRepository.Create(news)
 	if err != nil {
 		return nil, fmt.Errorf("error when creating News: %s", err.Error())

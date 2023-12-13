@@ -111,7 +111,7 @@ func (c *NewsControllerImpl) CreateNewsController(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
-
+	fmt.Println(newsCreateRequest.Category_ID)
 	userData := ctx.Get("user")
 	if userData == nil {
 		return ctx.JSON(http.StatusUnauthorized, helper.ErrorResponse("Unauthorized: Token not provided"))

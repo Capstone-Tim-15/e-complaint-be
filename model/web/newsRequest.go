@@ -14,7 +14,7 @@ type NewsCreateRequest struct {
 }
 
 type NewsUpdateRequest struct {
-	Category_ID string    `json:"categoryId" form:"categoryId" validate:"omitempty,min=1,max=6"`
+	Category_ID string    `json:"categoryId" form:"categoryId" validate:"omitempty,min=6,max=6"`
 	Title       string    `json:"title" form:"title" validate:"omitempty,min=1,max=255"`
 	Content     string    `json:"content" form:"content" validate:"omitempty,min=1,max=255"`
 	Date        time.Time `json:"date" form:"date" `
