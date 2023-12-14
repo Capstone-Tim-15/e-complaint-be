@@ -1,3 +1,5 @@
+github.com/antage/eventsource v0.0.0-20220422142129-c4aae935d5bd h1:FD3sn3oFA0wySr3iH+47H3lIts9qT9nZfoF935hxaH0=
+github.com/antage/eventsource v0.0.0-20220422142129-c4aae935d5bd/go.mod h1:jXAZMa2S7OGjBCXWeQVOIZd+LXToszS2zCh0NiHRGvE=
 github.com/cloudinary/cloudinary-go v1.7.0 h1:KI+1C5JM1TsWi3NNSVitshnQEc5n27firfWIEPDsoWQ=
 github.com/cloudinary/cloudinary-go v1.7.0/go.mod h1:V1AhCEPFlSN2FN3OosHgu4iX1SkusvDCgfSE7eU79Vo=
 github.com/creasty/defaults v1.5.1 h1:j8WexcS3d/t4ZmllX4GEkl4wIB/trOr035ajcLHCISM=

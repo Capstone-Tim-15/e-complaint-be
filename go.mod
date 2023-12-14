@@ -3,7 +3,9 @@ module ecomplaint
 go 1.21.0
 
 require (
-	firebase.google.com/go v3.13.0+incompatible
+	github.com/antage/eventsource v0.0.0-20220422142129-c4aae935d5bd
+	github.com/cloudinary/cloudinary-go v1.7.0
+	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/gorilla/websocket v1.5.1
