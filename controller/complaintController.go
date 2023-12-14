@@ -107,9 +107,10 @@ func (c *ComplaintControllerImpl) GetComplaintController(ctx echo.Context) error
 	user := ctx.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	ID := claims["id"].(string)
+	Role := claims["role"].(string)
 
 	if idQuery != "" {
-		result, err := c.ComplaintService.FindById(ctx, idQuery)
+		result, err := c.ComplaintService.FindById(ctx, idQuery, Role)
 		if err != nil {
 			if strings.Contains(err.Error(), "complaint not found") {
 				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaint Not Found"))
@@ -274,6 +275,7 @@ func (c *ComplaintControllerImpl) GetComplaintStatusRealtimeController(ctx echo.
 	ID := claims["id"].(string)
 
 	var lastUpdate time.Time
+	var lastCount int
 
 	messageChan := make(chan string)
 
@@ -283,18 +285,21 @@ func (c *ComplaintControllerImpl) GetComplaintStatusRealtimeController(ctx echo.
 			close(messageChan)
 			return nil
 		default:
-			result, _ := c.ComplaintService.FindByStatusUser(ctx, ID, statusQuery)
-			if len(result) == 0 && lastUpdate.IsZero() {
+			checker, _ := c.ComplaintService.FindAllUser(ctx, ID)
+			result, _ := c.ComplaintService.FindByStatusUser(ctx, statusQuery, ID)
+			if len(result) == 0 {
 				message := fmt.Sprintf("data: %s\n\n", "null")
 				fmt.Fprintf(ctx.Response(), message)
 				ctx.Response().Flush()
+				lastUpdate = time.Time{}
 			}
-			if len(result) > 0 && result[0].UpdatedAt != lastUpdate {
+			if len(result) > 0 && lastCount != len(result) && checker[0].UpdatedAt != lastUpdate {
 				data, _ := json.Marshal(result)
 				message := fmt.Sprintf("data: %s\n\n", data)
 				fmt.Fprintf(ctx.Response(), message)
 				ctx.Response().Flush()
-				lastUpdate = result[0].UpdatedAt
+				lastUpdate = checker[0].UpdatedAt
+				lastCount = len(result)
 			}
 		}
 		time.Sleep(2 * time.Second)
