@@ -7,6 +7,7 @@ import (
 	"ecomplaint/utils/helper"
 	req "ecomplaint/utils/request"
 	"fmt"
+
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 )
@@ -18,6 +19,8 @@ type FeedbackService interface {
 	FindById(ctx echo.Context, id string) (*domain.Feedback, error)
 	FindByAll(ctx echo.Context, page, pageSize int) ([]domain.Feedback, int64, error)
 	FindByNewsId(ctx echo.Context, newsID string, page, pageSize int) ([]domain.Feedback, int64, error)
+	CheckUser(senderId string) (*domain.User, error)
+	CheckAdmin(senderId string) (*domain.Admin, error)
 }
 
 type FeedbackServiceImp struct {
@@ -102,4 +105,22 @@ func (fs *FeedbackServiceImp) FindByNewsId(ctx echo.Context, newsID string, page
 		return nil, 0, fmt.Errorf("feedback not found")
 	}
 	return feedback, totalCount, nil
+}
+
+func (fs *FeedbackServiceImp) CheckUser(senderId string) (*domain.User, error) {
+	result, err := fs.FeedbackRepository.CheckUser(senderId)
+	if err != nil {
+		return nil, fmt.Errorf("error when check user: %s", err.Error())
+	}
+
+	return result, nil
+}
+
+func (fs *FeedbackServiceImp) CheckAdmin(senderId string) (*domain.Admin, error) {
+	result, err := fs.FeedbackRepository.CheckAdmin(senderId)
+	if err != nil {
+		return nil, fmt.Errorf("error when check admin: %s", err.Error())
+	}
+
+	return result, nil
 }

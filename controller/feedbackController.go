@@ -5,10 +5,12 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
-	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 )
 
 type FeedbackController interface {
@@ -40,7 +42,7 @@ func (c *FeedbackControllerImpl) GetFeedbackController(ctx echo.Context) error {
 		if strings.Contains(err.Error(), "feedback not found") {
 			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
 		}
-		response := res.FeedbackDomainToFeedbackResponse(result)
+		response := res.FindFeedbackDomainToFeedbackResponse(result)
 		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Feedback Data", response))
 	} else if feedbackNewsId != "" {
 		result, totalCount, err := c.FeedbackService.FindByNewsId(ctx, feedbackNewsId, page, pageSize)
@@ -80,6 +82,24 @@ func (c *FeedbackControllerImpl) CreateFeedbackController(ctx echo.Context) erro
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
 	}
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := claims["id"].(string)
+	userResult, err := c.FeedbackService.CheckUser(ID)
+	if err == nil {
+		feedbackCreateRequest.Fullname = userResult.Name
+		feedbackCreateRequest.PhotoImage = userResult.ImageUrl
+		feedbackCreateRequest.Role = "user"
+	} else {
+		adminResult, err := c.FeedbackService.CheckAdmin(ID)
+		if err != nil {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Error When Check Sender Account"))
+		}
+		feedbackCreateRequest.Fullname = adminResult.Name
+		feedbackCreateRequest.PhotoImage = adminResult.ImageUrl
+		feedbackCreateRequest.Role = "admin"
+	}
+
 	result, err := c.FeedbackService.CreateFeedback(ctx, feedbackCreateRequest)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation failed") {

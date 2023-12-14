@@ -8,15 +8,16 @@ import (
 
 func FeedbackCreateRequestToFeedbackDomain(request web.FeedbackCreateRequest) *domain.Feedback {
 	return &domain.Feedback{
-		User_ID: request.User_ID,
-		News_ID: request.News_ID,
-		Content: request.Content,
+		Role:       request.Role,
+		Fullname:   request.Fullname,
+		PhotoImage: request.PhotoImage,
+		News_ID:    request.News_ID,
+		Content:    request.Content,
 	}
 }
 
 func FeedbackUpdateRequestToFeedbackDomain(request web.FeedbackUpdateRequest) *domain.Feedback {
 	return &domain.Feedback{
-		User_ID: request.User_ID,
 		News_ID: request.News_ID,
 		Content: request.Content,
 	}
@@ -24,8 +25,10 @@ func FeedbackUpdateRequestToFeedbackDomain(request web.FeedbackUpdateRequest) *d
 
 func FeedbackDomaintoFeedbackSchema(request domain.Feedback) *schema.Feedback {
 	return &schema.Feedback{
-		User_ID: request.User_ID,
-		News_ID: request.News_ID,
-		Content: request.Content,
+		Fullname:   request.Fullname,
+		Role:       schema.Role(request.Role),
+		PhotoImage: request.PhotoImage,
+		News_ID:    request.News_ID,
+		Content:    request.Content,
 	}
 }

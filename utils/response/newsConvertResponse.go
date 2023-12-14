@@ -8,41 +8,26 @@ import (
 
 func NewsSchemaToNewsDomain(news *schema.News) *domain.News {
 	return &domain.News{
-		ID:       news.ID,
-		Admin_ID: news.Admin_ID,
-		Title:    news.Title,
-		Content:  news.Content,
-		Date:     news.Date,
+		ID:          news.ID,
+		Admin_ID:    news.Admin_ID,
+		Category_ID: news.Category_ID,
+		Title:       news.Title,
+		Content:     news.Content,
+		Date:        news.Date,
+		ImageUrl:    news.ImageUrl,
 	}
 }
 
-func NewsDomainToNewsResponse(news *domain.News) web.NewsResponse {
-	newsResponse := web.NewsResponse{
+func NewsDomainToNewsResponse(news *domain.News) web.NewsCreateResponse {
+	newsResponse := web.NewsCreateResponse{
 		ID:       news.ID,
 		Admin_ID: news.Admin_ID,
+		Category: news.Category_ID,
 		Title:    news.Title,
 		Content:  news.Content,
 		Date:     news.Date,
+		ImageUrl: news.ImageUrl,
 	}
-	for _, f := range news.Feedback {
-		feedbackResponse := web.FeedbackResponse{
-			ID:      f.ID,
-			User_ID: f.User_ID,
-			News_ID: f.News_ID,
-			Content: f.Content,
-		}
-		newsResponse.Feedback = append(newsResponse.Feedback, feedbackResponse)
-	}
-	for _, l := range news.Likes {
-		likesResponse := web.LikesResponse{
-			ID:      l.ID,
-			User_ID: l.User_ID,
-			News_ID: l.News_ID,
-			Status:  l.Status,
-		}
-		newsResponse.Likes = append(newsResponse.Likes, likesResponse)
-	}
-
 	return newsResponse
 
 }
@@ -51,32 +36,36 @@ func ConvertNewsResponse(news []domain.News) []web.NewsResponse {
 	var results []web.NewsResponse
 	for _, n := range news {
 		newsResponse := web.NewsResponse{
-			ID:       n.ID,
-			Admin_ID: n.Admin_ID,
-			Title:    n.Title,
-			Content:  n.Content,
-			Date:     n.Date,
+			ID:         n.ID,
+			Admin_ID:   n.Admin_ID,
+			Category:   n.Category.CategoryName,
+			Name:       n.Admin.Name,
+			PhotoImage: n.Admin.ImageUrl,
+			Title:      n.Title,
+			Content:    n.Content,
+			Date:       n.Date,
+			ImageUrl:   n.ImageUrl,
+			Feedback:   ConvertFeedbackResponse(n.Feedback),
+			Likes:      ConvertLikesResponse(n.Likes),
 		}
-		for _, f := range n.Feedback {
-			feedbackResponse := web.FeedbackResponse{
-				ID:      f.ID,
-				User_ID: f.User_ID,
-				News_ID: f.News_ID,
-				Content: f.Content,
-			}
-			newsResponse.Feedback = append(newsResponse.Feedback, feedbackResponse)
-		}
-		for _, l := range n.Likes {
-			likesResponse := web.LikesResponse{
-				ID:      l.ID,
-				User_ID: l.User_ID,
-				News_ID: l.News_ID,
-				Status:  l.Status,
-			}
-			newsResponse.Likes = append(newsResponse.Likes, likesResponse)
-		}
-
 		results = append(results, newsResponse)
 	}
 	return results
+}
+
+func FindNewsDomainToNewsResponse(news *domain.News) web.NewsResponse {
+	newsResponse := web.NewsResponse{
+		ID:         news.ID,
+		Admin_ID:   news.Admin_ID,
+		Category:   news.Category.CategoryName,
+		Name:       news.Admin.Name,
+		PhotoImage: news.Admin.ImageUrl,
+		Title:      news.Title,
+		Content:    news.Content,
+		Date:       news.Date,
+		ImageUrl:   news.ImageUrl,
+		Feedback:   ConvertFeedbackResponse(news.Feedback),
+		Likes:      ConvertLikesResponse(news.Likes),
+	}
+	return newsResponse
 }

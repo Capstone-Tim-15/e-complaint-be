@@ -1,5 +1,6 @@
 package web
 
+
 type ComplaintResponse struct {
 	ID         string            `json:"id"`
 	User_ID    string            `json:"userId"`
@@ -12,6 +13,7 @@ type ComplaintResponse struct {
 	Status     string            `json:"status"`
 	ImageUrl   string            `json:"imageUrl"`
 	CreatedAt  string            `json:"createdAt"`
+	UpdateAt   string         `json:"updateAt"`
 	Comment    []CommentResponse `json:"comment"`
 }
 
