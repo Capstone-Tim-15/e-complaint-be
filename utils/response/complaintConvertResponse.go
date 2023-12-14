@@ -53,6 +53,7 @@ func FindComplaintDomaintoComplaintResponse(complaint *domain.Complaint) web.Com
 		commentResponse := web.CommentResponse{
 			ID:           comment.ID,
 			Complaint_ID: comment.Complaint_ID,
+			Fullname: 	  comment.Fullname,
 			Role:         comment.Role,
 			Message:      comment.Message,
 		}
@@ -77,6 +78,7 @@ func FindStatusComplaintDomaintoComplaintResponse(complaints []domain.Complaint)
 			Status:     complaint.Status,
 			ImageUrl:   complaint.ImageUrl,
 			CreatedAt:  complaint.CreatedAt,
+			UpdateAt:   complaint.UpdatedAt.String(),
 
 			Comment: make([]web.CommentResponse, len(complaint.Comment)),
 		}

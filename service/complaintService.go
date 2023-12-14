@@ -51,8 +51,8 @@ func (s *ComplaintServiceImpl) CreateComplaint(ctx echo.Context, request web.Com
 	return result, nil
 }
 
-func (s ComplaintServiceImpl) FindById(ctx echo.Context, id string) (*domain.Complaint, error) {
-	complaint, err := s.ComplaintRepository.FindById(id)
+func (s ComplaintServiceImpl) FindById(ctx echo.Context, id, role string) (*domain.Complaint, error) {
+	complaint, err := s.ComplaintRepository.FindById(id, role)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (s *ComplaintServiceImpl) UpdateComplaint(ctx echo.Context, id string, requ
 }
 
 func (s *ComplaintServiceImpl) DeleteComplaint(ctx echo.Context, id string) error {
-	complaint, err := s.ComplaintRepository.FindById(id)
+	complaint, err := s.ComplaintRepository.FindById(id, "")
 	if err != nil {
 		return err
 	}

@@ -53,12 +53,18 @@ func (r *ComplaintRepositoryImpl) Create(complaint *domain.Complaint) (*domain.C
 
 }
 
-func (r *ComplaintRepositoryImpl) FindById(id string) (*domain.Complaint, error) {
+func (r *ComplaintRepositoryImpl) FindById(id, role string) (*domain.Complaint, error) {
 	complaint := domain.Complaint{}
-
-	result := r.DB.Where("id = ?", id).Preload("Comment", func(DB *gorm.DB) *gorm.DB{return DB.Order("created_at DESC")}).Where("deleted_at IS NULL").Preload("Category").Preload("User").First(&complaint)
-	if result.Error != nil {
-		return nil, result.Error
+	if role == "admin" {
+		result := r.DB.Where("id = ?", id).Preload("Comment", func(DB *gorm.DB) *gorm.DB{return DB.Order("created_at ASC")}).Preload("Category").Preload("User").First(&complaint)
+		if result.Error != nil {
+			return nil, result.Error
+		}
+	} else {
+		result := r.DB.Where("id = ?", id).Preload("Comment", func(DB *gorm.DB) *gorm.DB{return DB.Order("created_at DESC")}).Preload("Category").Preload("User").First(&complaint)
+		if result.Error != nil {
+			return nil, result.Error
+		}
 	}
 
 	return &complaint, nil
@@ -102,7 +108,7 @@ func (r *ComplaintRepositoryImpl) FindByStatus(status string, page, pageSize int
 		return nil, 0, resultCount.Error
 	}
 
-	result := r.DB.Debug().Where("status = ?", status).Where("deleted_at IS NULL").Preload("Comment").Preload("Category").Preload("User").Offset(offset).Limit(pageSize).Find(&complaint)
+	result := r.DB.Debug().Where("status = ? AND deleted_at IS NULL", status).Preload("Comment").Preload("Category").Preload("User").Offset(offset).Limit(pageSize).Order("created_at desc").Find(&complaint)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}

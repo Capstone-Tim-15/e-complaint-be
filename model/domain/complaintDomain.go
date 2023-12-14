@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type Complaint struct {
 	ID          string
 	User_ID     string
@@ -12,5 +14,6 @@ type Complaint struct {
 	Status      string
 	ImageUrl    string
 	CreatedAt   string
+	UpdatedAt   time.Time
 	Comment     []Comment
 }

@@ -6,11 +6,14 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cloudinary/cloudinary-go"
 	"github.com/cloudinary/cloudinary-go/api/uploader"
@@ -25,6 +28,7 @@ type ComplaintController interface {
 	GetComplaintsController(ctx echo.Context) error
 	UpdateComplaintController(ctx echo.Context) error
 	DeleteComplaintController(ctx echo.Context) error
+	GetComplaintStatusRealtimeController(ctx echo.Context) error
 }
 
 type ComplaintControllerImpl struct {
@@ -256,3 +260,44 @@ func (c *ComplaintControllerImpl) DeleteComplaintController(ctx echo.Context) er
 
 	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Delete Complaint", nil))
 }
+
+
+func (c *ComplaintControllerImpl) GetComplaintStatusRealtimeController(ctx echo.Context) error {
+	ctx.Response().Header().Set("Content-Type", "text/event-stream")
+	ctx.Response().Header().Set("Cache-Control", "no-cache")
+	ctx.Response().Header().Set("Connection", "keep-alive")
+
+	statusQuery := ctx.QueryParam("status")
+
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := claims["id"].(string)
+
+	var lastUpdate time.Time
+
+	messageChan := make(chan string)
+
+	for {
+		select {
+		case <-ctx.Request().Context().Done():
+			close(messageChan)
+			return nil
+		default:
+			result, _ := c.ComplaintService.FindByStatusUser(ctx, ID, statusQuery)
+			if len(result) == 0 && lastUpdate.IsZero() {
+				message := fmt.Sprintf("data: %s\n\n", "null")
+				fmt.Fprintf(ctx.Response(), message)
+				ctx.Response().Flush()
+			}
+			if len(result) > 0 && result[0].UpdatedAt != lastUpdate {
+				data, _ := json.Marshal(result)
+				message := fmt.Sprintf("data: %s\n\n", data)
+				fmt.Fprintf(ctx.Response(), message)
+				ctx.Response().Flush()
+				lastUpdate = result[0].UpdatedAt
+			}
+		}
+		time.Sleep(2 * time.Second)
+	}
+}
+
