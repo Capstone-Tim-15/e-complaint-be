@@ -18,10 +18,15 @@ func FAQRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	faqController := controller.NewFaqController(faqService)
 
 	faqsGroup := e.Group("admin/faq")
+	faqsUser := e.Group("user/faq")
 	faqsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
 	faqsGroup.POST("", faqController.CreateFaqController)
 	faqsGroup.GET("/search/:id", faqController.FindController)
 	faqsGroup.GET("/search", faqController.FindController)
 	faqsGroup.PUT("/:id", faqController.UpdateFaqController)
+
+	faqsUser.GET("/search/:id", faqController.FindController)
+	faqsUser.GET("/search", faqController.FindController)
+	faqsUser.GET("", faqController.FindController)
 }
