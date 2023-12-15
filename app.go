@@ -39,6 +39,8 @@ func main() {
   
   go WS.Run()
 
+	routes.DashboardRoutes(app, DB)
+
 	app.Pre(middleware.RemoveTrailingSlash())
 	app.Use(middleware.CORS())
 	app.Use(middleware.LoggerWithConfig(
