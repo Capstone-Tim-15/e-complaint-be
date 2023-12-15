@@ -28,7 +28,7 @@ func main() {
 	routes.OTPRoutes(app, DB, validate)
 	routes.CommentRoutes(app, DB, validate)
 	routes.ChatRoutes(app, DB, validate, WS)
-	routes.ComplaintRoutes(app, DB, validate)
+	routes.ComplaintRoutes(app, DB, validate, AI)
 	routes.CommentRoutes(app, DB, validate)
 	routes.AIRoutes(app, AI)
 	routes.FAQRoutes(app, DB, validate)
