@@ -16,7 +16,7 @@ func LikeRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	likeService := service.NewLikeService(likeRepositoryu, validate)
 	likeController := controller.NewLikeController(likeService)
 
-	likeGroup := e.Group("/users/news/like")
+	likeGroup := e.Group("/user/news/like")
 	likeGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 	likeGroup.POST("", likeController.CreateLikeController)
 	likeGroup.GET("/search", likeController.GetLikeController)
