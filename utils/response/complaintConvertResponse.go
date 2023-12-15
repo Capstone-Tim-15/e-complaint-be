@@ -108,6 +108,7 @@ func FindCategoryComplaintDomaintoComplaintResponse(complaints []domain.Complain
 			Category:   complaint.Category.CategoryName,
 			Title:      complaint.Title,
 			Content:    complaint.Content,
+			Address:    complaint.Address,
 			Status:     complaint.Status,
 			ImageUrl:   complaint.ImageUrl,
 

@@ -16,7 +16,7 @@ func NewsRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	newsService := service.NewNewsService(newsRepository, validate)
 	newsController := controller.NewNewsController(newsService)
 
-	newsGroup := e.Group("users/news")
+	newsGroup := e.Group("user/news")
 	newsGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 	newsGroup.GET("/search", newsController.GetNewsController)
 	newsGroup.GET("", newsController.GetAllNewsController)
