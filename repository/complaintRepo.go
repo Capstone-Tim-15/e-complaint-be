@@ -32,18 +32,31 @@ func NewComplaintRepository(DB *gorm.DB) ComplaintRepository {
 
 func (r *ComplaintRepositoryImpl) Create(complaint *domain.Complaint) (*domain.Complaint, error) {
 	var complaintDb *schema.Complaint
+	var notificationDb *schema.Notification
+
+	notificationDb = &schema.Notification{}
 
 	for {
 		complaintDb = req.ComplaintDomaintoComplaintSchema(*complaint)
 		complaintDb.ID = helper.GenerateRandomString()
+		notificationDb.ID = helper.GenerateRandomString()
 
 		result := r.DB.First(&complaint, complaintDb.ID)
-		if result.Error != nil {
+		notifresult := r.DB.First(&schema.Notification{}, notificationDb.ID)
+		if result.Error != nil && notifresult != nil {
 			break
 		}
 	}
 
 	result := r.DB.Create(&complaintDb)
+	if result.Error == nil {
+		notificationDb.Complaint_ID = complaintDb.ID
+		notificationDb.Message = "Complaint has been created by " + complaintDb.User.Name + " with category " + complaintDb.Category.CategoryName
+		notificationDb.Status = "unread"
+	
+		r.DB.Create(notificationDb)
+		
+	}
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -67,6 +80,12 @@ func (r *ComplaintRepositoryImpl) FindById(id, role string) (*domain.Complaint, 
 			return nil, result.Error
 		}
 	}
+
+	var notification *schema.Notification
+	notification = &schema.Notification{
+		Status: "read",
+	}
+	r.DB.Model(&schema.Notification{}).Where("complaint_id = ?", id).Updates(notification)
 
 	return &complaint, nil
 }

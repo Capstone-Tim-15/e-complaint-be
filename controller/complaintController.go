@@ -33,6 +33,7 @@ type ComplaintController interface {
 
 type ComplaintControllerImpl struct {
 	ComplaintService service.ComplaintService
+	NotificationService service.NotificationService
 }
 
 func NewComplaintController(ComplaintService service.ComplaintService) *ComplaintControllerImpl {

@@ -36,6 +36,7 @@ func main() {
 	routes.NewsRoutes(app, DB, validate)
 	routes.LikeRoutes(app, DB, validate)
 	routes.FeedbackRoutes(app, DB, validate)
+	routes.NotificationRoutes(app, DB, validate)
   
   go WS.Run()
 
