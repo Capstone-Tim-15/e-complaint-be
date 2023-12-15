@@ -73,7 +73,7 @@ func (repository *NewsRepositoryImpl) Delete(id string) error {
 
 func (repository *NewsRepositoryImpl) FindById(id string) (*domain.News, error) {
 	news := domain.News{}
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback.User").Preload("Likes").Preload("Category").First(&news, "id = ?", id)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").First(&news, "id = ?", id)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -105,7 +105,7 @@ func (repository *NewsRepositoryImpl) FindByTitle(title string, page, pageSize i
 	if resultCount.Error != nil {
 		return nil, 0, resultCount.Error
 	}
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news, "title LIKE  ?", title+"%")
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at ASC").Find(&news, "title LIKE  ?", "%"+title+"%")
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
