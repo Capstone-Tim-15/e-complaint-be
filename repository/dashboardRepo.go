@@ -45,7 +45,7 @@ func (repository *DashboardRepositoryImpl) CountSolved(table string) (monthly []
 	var monthCount []web.Monthly
 	log.Println(table)
 	result := repository.DB.Table(table).Select("DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS total").
-		Where("status = ?", "solved").
+		Where("status = ?", "Selesai").
 		Group("month").
 		Order("month").Find(&monthCount)
 	if result.Error != nil {
