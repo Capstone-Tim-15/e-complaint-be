@@ -16,6 +16,8 @@ type FeedbackRepository interface {
 	FindById(id string) (*domain.Feedback, error)
 	FindByAll(page, pageSize int) ([]domain.Feedback, int64, error)
 	FindByNewsId(newsID string, page, pageSize int) ([]domain.Feedback, int64, error)
+	CheckUser(senderId string) (*domain.User, error)
+	CheckAdmin(senderId string) (*domain.Admin, error)
 }
 
 type FeedbackRepositoryImpl struct {
@@ -68,7 +70,7 @@ func (repository *FeedbackRepositoryImpl) Delete(id string) error {
 
 func (repository *FeedbackRepositoryImpl) FindById(id string) (*domain.Feedback, error) {
 	feedback := domain.Feedback{}
-	result := repository.DB.Where("deleted_at IS NULL").First(&feedback, "id = ?", id)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("User").First(&feedback, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -103,4 +105,24 @@ func (repository *FeedbackRepositoryImpl) FindByNewsId(newsID string, page, page
 		return nil, 0, result.Error
 	}
 	return feedback, totalCount, nil
+}
+
+func (repository *FeedbackRepositoryImpl) CheckUser(senderId string) (*domain.User, error) {
+	user := domain.User{}
+	result := repository.DB.Where("id = ?", senderId).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &user, nil
+}
+
+func (repository *FeedbackRepositoryImpl) CheckAdmin(senderId string) (*domain.Admin, error) {
+	admin := domain.Admin{}
+	result := repository.DB.Where("id = ?", senderId).First(&admin)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &admin, nil
 }

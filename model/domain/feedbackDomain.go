@@ -1,9 +1,10 @@
 package domain
 
 type Feedback struct {
-	ID      string
-	User_ID string
-	User    User
-	News_ID string
-	Content string
+	ID         string
+	News_ID    string
+	Fullname   string
+	Role       string
+	PhotoImage string
+	Content    string
 }

@@ -17,6 +17,7 @@ type Complaint struct {
 	Category    Category       `gorm:"foreignKey:Category_ID;references:ID"`
 	Title       string
 	Content     string
+	Address     string
 	Status      Status `gorm:"type:varchar(255)"`
 	ImageUrl    string
 	Comment     []Comment `gorm:"ForeignKey:Complaint_ID;references:ID"`
@@ -25,7 +26,7 @@ type Complaint struct {
 type Status string
 
 const (
-	SOLVED    Status = "SOLVED"
-	UNSOLVED  Status = "UNSOLVED"
-	SEND Status = "SEND"
+	SOLVED   Status = "SOLVED"
+	UNSOLVED Status = "UNSOLVED"
+	SEND     Status = "SEND"
 )

@@ -5,6 +5,7 @@ import (
 	"ecomplaint/service"
 	"ecomplaint/utils/helper"
 	res "ecomplaint/utils/response"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strings"
@@ -61,6 +62,11 @@ func (c *LikeControllerImpl) CreateLikeController(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
 	}
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	ID := claims["id"].(string)
+	likeCreateRequest.User_ID = ID
+
 	result, err := c.LikeService.CreateLike(ctx, likeCreateRequest)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Create Like Error"))
