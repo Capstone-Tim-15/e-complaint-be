@@ -17,10 +17,11 @@ func CategoryRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	categoryController := controller.NewCategoryController(categoryService)
 
 	categoryGroup := e.Group("admin/category")
+categoryUser := e.Group("user/category")
 	categoryGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
 	categoryGroup.POST("", categoryController.CreateCategoryController)
-	categoryGroup.GET("/search/:id", categoryController.FindController)
-	categoryGroup.GET("/search", categoryController.FindController)
+	categoryUser.GET("/:id", categoryController.FindController)
+	categoryUser.GET("", categoryController.FindController)
 	categoryGroup.PUT("/:id", categoryController.UpdateCategoryController)
 }
