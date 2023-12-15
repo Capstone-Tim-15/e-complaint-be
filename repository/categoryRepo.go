@@ -37,7 +37,7 @@ func (repository *CategoryRepositoryImpl) FindAll() ([]domain.Category, error) {
 func (repository *CategoryRepositoryImpl) FindById(id string) (*domain.Category, error) {
 	faq := domain.Category{}
 
-	result := repository.DB.Where("id = ?", id).First(&faq)
+	result := repository.DB.Where("id = ?", id).Preload("FAQ").First(&faq)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -56,6 +56,7 @@ func (repository *CategoryRepositoryImpl) Create(cat *domain.Category) (*domain.
 			break
 		}
 	}
+	cat.ID = catDB.ID
 
 	result := repository.DB.Create(catDB)
 	if result.Error != nil {
