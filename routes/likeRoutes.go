@@ -23,4 +23,10 @@ func LikeRoutes(e *echo.Echo, db *gorm.DB, validate *validator.Validate) {
 	likeGroup.GET("", likeController.GetAllLikeController)
 	likeGroup.PUT("/:id", likeController.UpdateLikeController)
 	likeGroup.DELETE("/:id", likeController.DeleteLikeController)
+
+	adminLikeGroup := e.Group("/admin/news/like")
+	adminLikeGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
+	adminLikeGroup.GET("/search", likeController.GetLikeController)
+	adminLikeGroup.GET("", likeController.GetAllLikeController)
+
 }

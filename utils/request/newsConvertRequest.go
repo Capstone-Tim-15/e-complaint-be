@@ -8,18 +8,13 @@ import (
 )
 
 func NewsCreateRequestToNewsDomain(request web.NewsCreateRequest) *domain.News {
-	dateValue := request.Date
-	if dateValue == (time.Time{}) {
-		now := time.Now()
-		dateValue = now
-	}
 
 	return &domain.News{
 		Admin_ID:    request.Admin_ID,
 		Category_ID: request.Category_ID,
 		Title:       request.Title,
 		Content:     request.Content,
-		Date:        dateValue,
+		Date:        time.Now(),
 		ImageUrl:    request.ImageUrl,
 	}
 }

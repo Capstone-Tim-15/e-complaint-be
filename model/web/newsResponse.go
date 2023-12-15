@@ -8,7 +8,7 @@ type NewsResponse struct {
 	ID         string             `json:"id"`
 	Admin_ID   string             `json:"adminId"`
 	Category   string             `json:"category"`
-	Name       string             `json:"name"`
+	Fullname   string             `json:"fullname"`
 	PhotoImage string             `json:"photoImage"`
 	Title      string             `json:"title"`
 	Content    string             `json:"content"`

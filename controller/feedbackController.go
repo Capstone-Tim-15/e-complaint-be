@@ -39,9 +39,12 @@ func (c *FeedbackControllerImpl) GetFeedbackController(ctx echo.Context) error {
 	pageSize := 10
 	if feedbackID != "" {
 		result, err := c.FeedbackService.FindById(ctx, feedbackID)
-		if strings.Contains(err.Error(), "feedback not found") {
-			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
+		if err != nil {
+			if strings.Contains(err.Error(), "feedback not found") {
+				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
+			}
 		}
+
 		response := res.FindFeedbackDomainToFeedbackResponse(result)
 		return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Get Feedback Data", response))
 	} else if feedbackNewsId != "" {
