@@ -6,6 +6,7 @@ import (
 	"ecomplaint/utils/helper"
 	req "ecomplaint/utils/request"
 	res "ecomplaint/utils/response"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -47,21 +48,20 @@ func (r *ComplaintRepositoryImpl) Create(complaint *domain.Complaint) (*domain.C
 			break
 		}
 	}
-
 	result := r.DB.Create(&complaintDb)
-	if result.Error == nil {
-		notificationDb.Complaint_ID = complaintDb.ID
-		notificationDb.Message = "Complaint has been created by " + complaintDb.User.Name + " with category " + complaintDb.Category.CategoryName
-		notificationDb.Status = "unread"
-	
-		r.DB.Create(notificationDb)
-		
-	}
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
 	complaint = res.ComplaintSchemaToComplaintDomain(complaintDb)
+	
+	var getComplaint *schema.Complaint
+	r.DB.Preload("User").Preload("Category").First(&getComplaint, "id = ? ",complaintDb.ID)
+	log.Println(getComplaint.Category)
+	notificationDb.Complaint_ID = complaintDb.ID
+	notificationDb.Message = "Complaint has been created by " + getComplaint.User.Name + " with category " + getComplaint.Category.CategoryName
+	notificationDb.Status = "unread"
+
+	r.DB.Create(notificationDb)
 
 	return complaint, nil
 
