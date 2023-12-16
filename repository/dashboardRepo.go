@@ -10,6 +10,7 @@ type DashboardRepository interface {
 	//CountUser() (totalUser int64, err error)
 	CountComplaint(table string) (monthly []web.Monthly, err error)
 	CountSolved(table string) (monthly []web.Monthly, err error)
+	TotalAll() (landing *web.LandingPage, err error)
 }
 
 type DashboardRepositoryImpl struct {
@@ -19,15 +20,6 @@ type DashboardRepositoryImpl struct {
 func NewDashboardRepository(DB *gorm.DB) DashboardRepository {
 	return &DashboardRepositoryImpl{DB: DB}
 }
-
-//func (repository *DashboardRepositoryImpl) CountUser() (totalUser int64, err error) {
-//	var totalCount int64
-//	result := repository.DB.Model(&domain.User{}).Where("deleted_at IS NULL").Count(&totalCount)
-//	if result.Error != nil {
-//		return 0, result.Error
-//	}
-//	return totalCount, nil
-//}
 
 func (repository *DashboardRepositoryImpl) CountComplaint(table string) (monthly []web.Monthly, err error) {
 	var monthCount []web.Monthly
@@ -54,12 +46,28 @@ func (repository *DashboardRepositoryImpl) CountSolved(table string) (monthly []
 
 	return monthCount, nil
 }
+func (repository *DashboardRepositoryImpl) TotalAll() (landing *web.LandingPage, err error) {
+	var total *web.LandingPage
+	var user int64
+	var complaint int64
+	var solved int64
+	resultUsers := repository.DB.Table("users").Count(&user)
+	if resultUsers.Error != nil {
+		return nil, resultUsers.Error
+	}
+	resultComplaint := repository.DB.Table("complaints").Count(&complaint)
+	if resultComplaint.Error != nil {
+		return nil, resultComplaint.Error
+	}
+	resultSolved := repository.DB.Table("complaints").Where("status = ?", "solved").Count(&solved)
+	if resultSolved.Error != nil {
+		return nil, resultSolved.Error
+	}
+	total = &web.LandingPage{
+		TotalUser:      user,
+		TotalComplaint: complaint,
+		TotalResolved:  solved,
+	}
 
-//func (repository *DashboardRepositoryImpl) CountResolved() (totalResolved int64, err error) {
-//	var totalCount int64
-//	result := repository.DB.Model(&domain.Complaint{}).Where("status = ?", "solved").Count(&totalCount)
-//	if result.Error != nil {
-//		return 0, result.Error
-//	}
-//	return totalCount, nil
-//}
+	return total, nil
+}
