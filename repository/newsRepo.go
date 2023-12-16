@@ -90,7 +90,7 @@ func (repository *NewsRepositoryImpl) FindByAll(page, pageSize int) ([]domain.Ne
 		return nil, 0, resultCount.Error
 	}
 
-	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes").Preload("Category").Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&news)
+	result := repository.DB.Where("deleted_at IS NULL").Preload("Admin").Preload("Feedback").Preload("Likes", func(DB *gorm.DB) *gorm.DB{return DB.Where("deleted_at IS NULL")}).Preload("Category").Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&news)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
