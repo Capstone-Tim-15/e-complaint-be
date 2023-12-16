@@ -15,11 +15,12 @@ func DashboardRoutes(e *echo.Echo, db *gorm.DB) {
 	dashboardController := controller.NewDashboardController(dashboardRepo)
 
 	dashboardGroup := e.Group("admin/dashboard")
+	landingGroup := e.Group("landing")
 	dashboardGroup.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET_ADMIN"))))
 
 	dashboardGroup.GET("/complaint", dashboardController.GetDashboardComplaintController)
 	dashboardGroup.GET("/solved", dashboardController.GetDashboardSolvedController)
 	dashboardGroup.GET("/user", dashboardController.GetDashboardUserController)
-	dashboardGroup.GET("", dashboardController.GetDashboardAllController)
+	landingGroup.GET("", dashboardController.GetDashboardAllController)
 
 }
