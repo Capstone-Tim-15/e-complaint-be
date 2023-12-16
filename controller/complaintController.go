@@ -29,14 +29,16 @@ type ComplaintController interface {
 	UpdateComplaintController(ctx echo.Context) error
 	DeleteComplaintController(ctx echo.Context) error
 	GetComplaintStatusRealtimeController(ctx echo.Context) error
+	AIRecomController(ctx echo.Context) error
 }
 
 type ComplaintControllerImpl struct {
 	ComplaintService service.ComplaintService
+	AIService        service.AIService
 }
 
-func NewComplaintController(ComplaintService service.ComplaintService) *ComplaintControllerImpl {
-	return &ComplaintControllerImpl{ComplaintService: ComplaintService}
+func NewComplaintController(ComplaintService service.ComplaintService, AIService service.AIService) *ComplaintControllerImpl {
+	return &ComplaintControllerImpl{ComplaintService: ComplaintService, AIService: AIService}
 }
 
 func (c *ComplaintControllerImpl) CreateComplaintController(ctx echo.Context) error {
@@ -193,12 +195,12 @@ func (c *ComplaintControllerImpl) GetComplaintsController(ctx echo.Context) erro
 			if strings.Contains(err.Error(), "complaints not found") {
 				return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Complaints Not Found"))
 			}
-	
+
 			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Get Complaints Data Error"))
 		}
-	
+
 		response := res.ConvertComplaintResponse(result)
-	
+
 		return ctx.JSON(http.StatusOK, helper.SuccessResponsePage("Successfully Get Complaint Data", page, pageSize, totalCount, response))
 	}
 
@@ -262,7 +264,6 @@ func (c *ComplaintControllerImpl) DeleteComplaintController(ctx echo.Context) er
 	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Delete Complaint", nil))
 }
 
-
 func (c *ComplaintControllerImpl) GetComplaintStatusRealtimeController(ctx echo.Context) error {
 	ctx.Response().Header().Set("Content-Type", "text/event-stream")
 	ctx.Response().Header().Set("Cache-Control", "no-cache")
@@ -306,3 +307,27 @@ func (c *ComplaintControllerImpl) GetComplaintStatusRealtimeController(ctx echo.
 	}
 }
 
+func (c *ComplaintControllerImpl) AIRecomController(ctx echo.Context) error {
+	aiCreateRequest := web.AICreateRequest{}
+	err := ctx.Bind(&aiCreateRequest)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Client Input"))
+	}
+
+	if aiCreateRequest.Message == "" {
+		return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Complaint Message Cannot Be Empty"))
+	}
+
+	result, err := c.AIService.ResolveComplaint(ctx, aiCreateRequest.Message)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error Generating Recommendation"))
+	}
+
+	response := map[string]interface{}{
+		"complaint":      aiCreateRequest.Message,
+		"recommendation": result,
+		"timestamp":      time.Now().Format(time.RFC3339),
+	}
+
+	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Generated Recommendation", response))
+}
