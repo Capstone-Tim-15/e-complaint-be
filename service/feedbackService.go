@@ -62,7 +62,7 @@ func (fs *FeedbackServiceImp) UpdateFeedback(ctx echo.Context, request web.Feedb
 	feedback := req.FeedbackUpdateRequestToFeedbackDomain(request)
 	_, err = fs.FeedbackRepository.Update(feedback, id)
 	if err != nil {
-		return nil, fmt.Errorf("error when updatating feedback: %s", err.Error())
+		return nil, fmt.Errorf("error when updating feedback: %s", err.Error())
 	}
 	result, err := fs.FeedbackRepository.FindById(id)
 	if err != nil {

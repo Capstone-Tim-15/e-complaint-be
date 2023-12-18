@@ -111,7 +111,7 @@ func (c *FeedbackControllerImpl) CreateFeedbackController(ctx echo.Context) erro
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Create Feedback Error"))
 	}
 	response := res.FeedbackDomainToFeedbackResponse(result)
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Create Feedback", response))
+	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Create Feedback", response))
 }
 
 func (c *FeedbackControllerImpl) UpdateFeedbackController(ctx echo.Context) error {
@@ -126,6 +126,13 @@ func (c *FeedbackControllerImpl) UpdateFeedbackController(ctx echo.Context) erro
 		if strings.Contains(err.Error(), "validation failed") {
 			return ctx.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Validation"))
 		}
+		if strings.Contains(err.Error(), "error when updating feedback") {
+			return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error When Updating Feedback"))
+		}
+		if strings.Contains(err.Error(), "feedback not found") {
+			return ctx.JSON(http.StatusNotFound, helper.ErrorResponse("Feedback Not Found"))
+		}
+
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Update Feedback Error"))
 	}
 	response := res.FeedbackDomainToFeedbackResponse(result)
