@@ -51,7 +51,7 @@ func (repository *FeedbackRepositoryImpl) Create(feedback *domain.Feedback) (*do
 
 func (repository *FeedbackRepositoryImpl) Update(feedback *domain.Feedback, id string) (*domain.Feedback, error) {
 	feedbackDb := request.FeedbackDomaintoFeedbackSchema(*feedback)
-	result := repository.DB.Table("feedback").Where("id = ?", id).Updates(feedbackDb)
+	result := repository.DB.Table("feedbacks").Where("id = ?", id).Updates(feedbackDb)
 	if result.Error != nil {
 		return nil, result.Error
 	}

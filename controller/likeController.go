@@ -72,7 +72,7 @@ func (c *LikeControllerImpl) CreateLikeController(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, helper.ErrorResponse("Create Like Error"))
 	}
 	response := res.LikesDomainToLikesResponse(result)
-	return ctx.JSON(http.StatusOK, helper.SuccessResponse("Successfully Create Like Data", response))
+	return ctx.JSON(http.StatusCreated, helper.SuccessResponse("Successfully Create Like Data", response))
 }
 
 func (c *LikeControllerImpl) UpdateLikeController(ctx echo.Context) error {
