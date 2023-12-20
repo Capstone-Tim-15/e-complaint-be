@@ -287,7 +287,8 @@ func (c *ComplaintControllerImpl) GetComplaintStatusRealtimeController(ctx echo.
 			return nil
 		default:
 			checker, _ := c.ComplaintService.FindAllUser(ctx, ID)
-			result, _ := c.ComplaintService.FindByStatusUser(ctx, statusQuery, ID)
+			complaints, _ := c.ComplaintService.FindByStatusUser(ctx, statusQuery, ID)
+			result := res.ConvertComplaintDomainIntoComplaintRealtimeResponse(complaints)
 			if len(result) == 0 {
 				message := fmt.Sprintf("data: %s\n\n", "null")
 				fmt.Fprintf(ctx.Response(), message)

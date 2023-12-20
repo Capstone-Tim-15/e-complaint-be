@@ -148,3 +148,38 @@ func ConvertComplaintResponse(complaints []domain.Complaint) []web.ComplaintResp
 	}
 	return results
 }
+
+
+func ConvertComplaintDomainIntoComplaintRealtimeResponse(complaints []domain.Complaint) []web.ComplaintRealtimeResponse {
+	result := []web.ComplaintRealtimeResponse{}
+	for _, complaint := range complaints {
+		complaintResponse := web.ComplaintRealtimeResponse{
+			ID:        complaint.ID,
+			User:      UserDomaintoUserResponse(&complaint.User),
+			Category:  CategoryResponse(&complaint.Category),
+			Title:     complaint.Title,
+			Content:   complaint.Content,
+			Address:   complaint.Address,
+			Status:    complaint.Status,
+			ImageUrl:  complaint.ImageUrl,
+			CreatedAt: complaint.CreatedAt,
+			UpdatedAt: complaint.UpdatedAt,
+			Comment: make([]web.CommentResponse, len(complaint.Comment)),
+		}
+	
+		for i, comment := range complaint.Comment {
+			commentResponse := web.CommentResponse{
+				ID:           comment.ID,
+				Complaint_ID: comment.Complaint_ID,
+				Fullname: 	  comment.Fullname,
+				Role:         comment.Role,
+				Message:      comment.Message,
+			}
+			complaintResponse.Comment[i] = commentResponse
+		}
+		result = append(result, complaintResponse)
+	}
+	
+
+	return result
+}
