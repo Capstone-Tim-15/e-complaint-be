@@ -40,7 +40,6 @@ func OTPDomaintoOTPResponse(otp *domain.OTPUser) web.OTPUserResponse {
 	return web.OTPUserResponse{
 		Id:      otp.ID,
 		User_ID: otp.User_ID,
-		OTP:     otp.OTP,
 	}
 }
 
@@ -48,7 +47,6 @@ func AdminOTPDomaintoOTPResponse(otp *domain.OTPAdmin) web.OTPAdminResponse {
 	return web.OTPAdminResponse{
 		Id:       otp.ID,
 		Admin_ID: otp.Admin_ID,
-		OTP:      otp.OTP,
 	}
 }
 
