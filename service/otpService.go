@@ -50,6 +50,7 @@ func (s *OTPServiceImpl) CreateOTPUser(ctx echo.Context, request web.OTPCreateRe
 
 	err = helper.SendOTP(user.Email, otpKey)
 	if err != nil {
+		fmt.Println(err)
 		return nil, fmt.Errorf("send otp error")
 	}
 

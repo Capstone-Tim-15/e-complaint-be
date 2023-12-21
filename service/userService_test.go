@@ -56,7 +56,7 @@ func TestFindByUser(t *testing.T){
 
 	mockUserRepository.On("FindById", userId).Return(&domain.User{}, nil)
 
-	_, err := UserService.FindByIdUser(ctx, userId)
+	_, err := UserService.FindById(ctx, userId)
 
 	assert.NoError(t, err)
 
@@ -76,7 +76,7 @@ func TestFindAllUsers(t *testing.T){
 
 	mockUserRepository.On("FindAll", 1, 10).Return([]domain.User{}, int64(0), nil)
 
-	_, _, err := UserService.FindAllUsers(ctx, 1, 10)
+	_, _, err := UserService.FindAll(ctx, 1, 10)
 
 	assert.NoError(t, err)
 
@@ -96,7 +96,7 @@ func FindByNameUser(t *testing.T){
 
 	mockUserRepository.On("FindByName", "test").Return([]domain.User{}, int64(0), nil)
 
-	_, err := UserService.FindByNameUser(ctx, "test")
+	_, err := UserService.FindByName(ctx, "test")
 
 	assert.NoError(t, err)
 
@@ -178,7 +178,7 @@ func TestResetPasswordUser(t *testing.T){
 	mockUserRepository.On("ResetPassword", mock.AnythingOfType("*domain.User"),userId).Return(nil, nil)
 	mockUserRepository.On("FindById", userId).Return(&domain.User{}, nil)
 
-	_, err := UserService.ResetPasswordUser(ctx, request, userId)
+	_, err := UserService.ResetPassword(ctx, request, userId)
 
 	assert.NoError(t, err)
 
@@ -201,10 +201,35 @@ func TestUpdatePhotoProfileUser(t *testing.T){
 	mockUserRepository.On("FindById", userId).Return(&domain.User{}, nil)
 	mockUserRepository.On("PhotoProfile", mock.AnythingOfType("*domain.User"),userId).Return(nil, nil)
 
-	_, err := UserService.UpdatePhotoProfileUser(ctx, userId, "test")
+	_, err := UserService.UpdatePhotoProfile(ctx, userId, "test")
 
 	assert.NoError(t, err)
 
 	mockUserRepository.AssertExpectations(t)
 }
 
+func TestLoginUser(t *testing.T){
+	mockUserRepository := new(mocks.UserRepository)
+	validate := validator.New()
+	e := echo.New()
+	ctx := e.AcquireContext()
+
+	UserService := &UserServiceImpl{
+		UserRepository: mockUserRepository,
+		Validate: validate,
+	}
+
+	request	:= web.UserLoginRequest{
+		Username: "test",
+		Password: "12345678",
+	}
+
+	mockUserRepository.On("FindByUsername", request.Username).Return(&domain.User{ID: "123456", Name: "test", Username: "test", Email: "test@test.com", Phone: "12345678910", Password: "$2a$10$ETTLBf7J9zl2WPBNjkriW.4mpISY2Z.8VJHXYAp8RkwYFTGFpj4au", ImageUrl: "test"}, nil)
+
+	_, err := UserService.LoginUser(ctx, request)
+
+	assert.NoError(t, err)
+
+	mockUserRepository.AssertExpectations(t)
+
+}

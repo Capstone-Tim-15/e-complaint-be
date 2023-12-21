@@ -80,6 +80,8 @@ func (s *AdminServiceImpl) LoginAdmin(ctx echo.Context, request web.AdminLoginRe
 
 	err = helper.ComparePassword(existingAdmin.Password, admin.Password)
 	if err != nil {
+		fmt.Println(existingAdmin.Password, admin.Password)
+		fmt.Println(err)
 		return nil, fmt.Errorf("invalid email or password")
 	}
 

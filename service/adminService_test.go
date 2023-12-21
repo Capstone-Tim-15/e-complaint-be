@@ -63,7 +63,7 @@ func TestFindByID(t *testing.T){
 	mockAdminRepository.AssertExpectations(t)
 }
 
-func TestFindAll(t *testing.T){
+func TestFindAllAdmin(t *testing.T){
 	mockAdminRepository := new(mocks.AdminRepository)
 	validate := validator.New()
 	e := echo.New()
@@ -202,6 +202,31 @@ func TestUpdatePhotoProfile(t *testing.T){
 	mockAdminRepository.On("PhotoProfile", mock.AnythingOfType("*domain.Admin"),userId).Return(&domain.Admin{}, nil)
 
 	_, err := AdminService.UpdatePhotoProfile(ctx, userId, imageUrl)
+
+	assert.NoError(t, err)
+
+	mockAdminRepository.AssertExpectations(t)
+}
+
+func TestLoginAdmin(t *testing.T){
+	mockAdminRepository := new(mocks.AdminRepository)
+	validate := validator.New()
+	e := echo.New()
+	ctx := e.AcquireContext()
+
+	AdminService := &AdminServiceImpl{
+		AdminRepository: mockAdminRepository,
+		Validate: validate,
+	}
+
+	request	:= web.AdminLoginRequest{
+		Username: "test",
+		Password: "12345678",
+	}
+
+	mockAdminRepository.On("FindByUsername", request.Username).Return(&domain.Admin{ID: "123456", Name: "test", Username: "test", Email: "test@test.com", Phone: "12345678910", Password: "$2a$10$ETTLBf7J9zl2WPBNjkriW.4mpISY2Z.8VJHXYAp8RkwYFTGFpj4au", ImageUrl: "test"}, nil)
+
+	_, err := AdminService.LoginAdmin(ctx, request)
 
 	assert.NoError(t, err)
 
