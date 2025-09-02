@@ -68,3 +68,6 @@ Meet the talented individuals who have contributed to the Gov-Complaint API:
 ### License
 
 This project operates under the MIT License. Refer to the [LICENSE](LICENSE) file for more details.
+
+
+<!-- Security scan triggered at 2025-09-02 15:21:10 -->
